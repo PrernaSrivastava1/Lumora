@@ -1,39 +1,47 @@
 package com.semanticvault.model;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * Represents a specific granular text chunk extracted from a parent Document.
  */
-@Data
+@Entity
+@Table(name = "document_chunks")
+@SQLDelete(sql = "UPDATE document_chunks SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false")
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentChunk {
+public class DocumentChunk extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Document ID is required")
-    private Long documentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_id", nullable = false)
+    private Document document;
 
-    @Min(value = 0, message = "Chunk index cannot be negative")
+    @Column(name = "chunk_index", nullable = false)
     private int chunkIndex;
 
-    @NotBlank(message = "Chunk content cannot be empty")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    private Long embeddingId;
-
-    @Min(value = 0, message = "Token count cannot be negative")
+    @Column(name = "token_count")
     private int tokenCount;
 
+    @Column(name = "start_char")
     private int startChar;
 
+    @Column(name = "end_char")
     private int endChar;
+
+    @OneToOne(mappedBy = "chunk", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private VectorEmbedding embedding;
 }

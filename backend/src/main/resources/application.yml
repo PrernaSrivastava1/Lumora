@@ -5,6 +5,31 @@ spring:
   application:
     name: semantic-vault
 
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/lumora}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+
 logging:
   level:
     root: INFO
@@ -19,4 +44,6 @@ ollama:
 
 semanticvault:
   embedding:
-    active-provider: MOCK # Keep MOCK as active default to prevent tests requiring running ollama from breaking
+    active-provider: MOCK
+  chunking:
+    default-strategy: FIXED_SIZE

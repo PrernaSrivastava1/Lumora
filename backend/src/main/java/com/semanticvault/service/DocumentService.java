@@ -1,11 +1,14 @@
 package com.semanticvault.service;
 
+import com.semanticvault.dto.DocumentResponseDto;
+import com.semanticvault.dto.EntityMapper;
 import com.semanticvault.model.Document;
 import com.semanticvault.model.ProcessingStatus;
 import com.semanticvault.model.Workspace;
 import com.semanticvault.repository.DocumentRepository;
 import com.semanticvault.repository.WorkspaceRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -15,10 +18,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
@@ -45,19 +49,23 @@ public class DocumentService {
         }
     }
 
-    public List<Document> getDocumentsByWorkspace(Long workspaceId) {
+    @Transactional(readOnly = true)
+    public List<DocumentResponseDto> getDocumentsByWorkspace(Long workspaceId) {
         if (!workspaceRepository.existsById(workspaceId)) {
             throw new IllegalArgumentException("Workspace not found with ID: " + workspaceId);
         }
-        return documentRepository.findByWorkspaceId(workspaceId);
+        return documentRepository.findByWorkspaceId(workspaceId).stream()
+                .map(EntityMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Document getDocumentById(Long id) {
-        return documentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Document not found with ID: " + id));
+    @Transactional(readOnly = true)
+    public DocumentResponseDto getDocumentById(Long id) {
+        Document doc = findEntityById(id);
+        return EntityMapper.toDto(doc);
     }
 
-    public Document uploadDocument(Long workspaceId, MultipartFile file) {
+    public DocumentResponseDto uploadDocument(Long workspaceId, MultipartFile file) {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new IllegalArgumentException("Workspace not found with ID: " + workspaceId));
 
@@ -79,11 +87,11 @@ public class DocumentService {
         String storedFileName = System.currentTimeMillis() + "_" + originalFilename;
         Path targetLocation = this.uploadPath.resolve(storedFileName);
 
-        // Save metadata initially
+        // Build and persist the document entity
         Document doc = Document.builder()
-                .workspaceId(workspaceId)
+                .workspace(workspace)
                 .title(originalFilename)
-                .originalFileName(storedFileName) // save actual stored disk path filename
+                .originalFileName(storedFileName)
                 .fileType(extension.toUpperCase())
                 .size(file.getSize())
                 .uploadTime(LocalDateTime.now())
@@ -97,9 +105,8 @@ public class DocumentService {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             // Process document (extract text and metadata)
             com.semanticvault.document.ParsedDocument parsed = processingService.processDocument(targetLocation, extension.toUpperCase());
-            // Perform text chunking & save in chunks repository
-            java.util.List<com.semanticvault.model.DocumentChunk> chunks = chunkingService.chunkAndStore(savedDoc.getId(), parsed.getText(), null);
-            // Update document with chunks count
+            // Perform text chunking (in-memory chunking service for now)
+            var chunks = chunkingService.chunkAndStore(savedDoc.getId(), parsed.getText(), null);
             savedDoc.setTotalChunks(chunks.size());
             documentRepository.save(savedDoc);
         } catch (IOException e) {
@@ -110,32 +117,40 @@ public class DocumentService {
         workspace.setTotalDocuments(workspace.getTotalDocuments() + 1);
         workspaceRepository.save(workspace);
 
-        return savedDoc;
+        return EntityMapper.toDto(savedDoc);
     }
 
     public void deleteDocument(Long id) {
-        Document doc = getDocumentById(id);
-        
+        Document doc = findEntityById(id);
+
         // Delete local file from disk
         Path filePath = this.uploadPath.resolve(doc.getOriginalFileName());
         try {
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            // Log warning but proceed with metadata deletion
             System.err.println("Warning: could not delete disk file " + filePath + ": " + e.getMessage());
         }
 
-        // Delete text chunks from store
+        // Delete text chunks from in-memory store
         chunkingService.deleteChunksForDocument(id);
 
-        // Delete metadata
-        documentRepository.deleteById(id);
+        // Soft-delete document (via @SQLDelete)
+        documentRepository.delete(doc);
 
         // Update workspace stats
-        workspaceRepository.findById(doc.getWorkspaceId()).ifPresent(workspace -> {
+        Workspace workspace = doc.getWorkspace();
+        if (workspace != null) {
             workspace.setTotalDocuments(Math.max(0, workspace.getTotalDocuments() - 1));
             workspaceRepository.save(workspace);
-        });
+        }
+    }
+
+    /**
+     * Internal helper: returns the raw entity for service-layer use.
+     */
+    public Document findEntityById(Long id) {
+        return documentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Document not found with ID: " + id));
     }
 
     private String getFileExtension(String filename) {

@@ -1,50 +1,17 @@
 package com.semanticvault.repository;
 
 import com.semanticvault.model.DocumentChunk;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Repository
-public class ChunkRepository {
+public interface ChunkRepository extends JpaRepository<DocumentChunk, Long> {
 
-    private final Map<Long, DocumentChunk> store = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    List<DocumentChunk> findByDocumentId(Long documentId);
 
-    public List<DocumentChunk> saveAll(List<DocumentChunk> chunks) {
-        if (chunks == null) {
-            return new ArrayList<>();
-        }
-        for (DocumentChunk chunk : chunks) {
-            if (chunk.getId() == null) {
-                chunk.setId(idGenerator.getAndIncrement());
-            }
-            store.put(chunk.getId(), chunk);
-        }
-        return chunks;
-    }
+    void deleteByDocumentId(Long documentId);
 
-    public List<DocumentChunk> findByDocumentId(Long documentId) {
-        if (documentId == null) {
-            return new ArrayList<>();
-        }
-        return store.values().stream()
-                .filter(chunk -> documentId.equals(chunk.getDocumentId()))
-                .collect(Collectors.toList());
-    }
-
-    public void deleteByDocumentId(Long documentId) {
-        if (documentId == null) return;
-        store.values().removeIf(chunk -> documentId.equals(chunk.getDocumentId()));
-    }
-
-    public void clear() {
-        store.clear();
-        idGenerator.set(1);
-    }
+    long countByDocumentId(Long documentId);
 }
