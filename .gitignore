@@ -16,3 +16,14 @@ bin/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Maven build outputs
+**/target/
+**/uploads/
+
+# Node dependencies and build outputs
+**/node_modules/
+**/dist/
+
+# Gemini cache directories
+.gemini/

@@ -1,0 +1,22 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: semantic-vault
+
+logging:
+  level:
+    root: INFO
+    com.semanticvault: DEBUG
+
+ollama:
+  base-url: http://localhost:11434
+  model: nomic-embed-text
+  timeout-ms: 10000
+  max-retries: 3
+  retry-delay-ms: 1000
+
+semanticvault:
+  embedding:
+    active-provider: MOCK # Keep MOCK as active default to prevent tests requiring running ollama from breaking
