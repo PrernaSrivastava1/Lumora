@@ -90,7 +90,7 @@ class SearchControllerTest {
                 .topK(5)
                 .build();
 
-        mockMvc.perform(post("/search")
+        mockMvc.perform(post("/api/v1/search")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -115,7 +115,7 @@ class SearchControllerTest {
                 .topK(1)
                 .build();
 
-        mockMvc.perform(post("/search")
+        mockMvc.perform(post("/api/v1/search")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -134,7 +134,7 @@ class SearchControllerTest {
                 .topK(0) // Invalid: min 1
                 .build();
 
-        mockMvc.perform(post("/search")
+        mockMvc.perform(post("/api/v1/search")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

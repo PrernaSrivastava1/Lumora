@@ -18,7 +18,7 @@ class HealthControllerTest {
 
     @Test
     void healthCheckShouldReturnUpStatusAndProjectName() throws Exception {
-        mockMvc.perform(get("/health")
+        mockMvc.perform(get("/api/v1/health")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"))

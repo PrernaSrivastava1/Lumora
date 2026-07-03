@@ -46,7 +46,7 @@ class WorkspaceControllerTest {
                 .description("Unique workspace details description")
                 .build();
 
-        mockMvc.perform(post("/workspaces")
+        mockMvc.perform(post("/api/v1/workspaces")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -55,7 +55,7 @@ class WorkspaceControllerTest {
                 .andExpect(jsonPath("$.data.id").exists())
                 .andExpect(jsonPath("$.data.name", is("New Workspace")));
 
-        mockMvc.perform(get("/workspaces"))
+        mockMvc.perform(get("/api/v1/workspaces"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data", hasSize(1)))
@@ -69,7 +69,7 @@ class WorkspaceControllerTest {
                 .description("Desc")
                 .build();
 
-        mockMvc.perform(post("/workspaces")
+        mockMvc.perform(post("/api/v1/workspaces")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
@@ -81,14 +81,14 @@ class WorkspaceControllerTest {
     void testUpdateWorkspaceDetails() throws Exception {
         // Pre-create a workspace first
         WorkspaceDto creation = WorkspaceDto.builder().name("Original").description("Original desc").build();
-        String result = mockMvc.perform(post("/workspaces")
+        String result = mockMvc.perform(post("/api/v1/workspaces")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(creation)))
                 .andReturn().getResponse().getContentAsString();
         Long workspaceId = ((Number) com.jayway.jsonpath.JsonPath.read(result, "$.data.id")).longValue();
 
         WorkspaceDto update = WorkspaceDto.builder().name("Updated Name").description("Updated description").build();
-        mockMvc.perform(put("/workspaces/" + workspaceId)
+        mockMvc.perform(put("/api/v1/workspaces/" + workspaceId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isOk())
@@ -100,24 +100,24 @@ class WorkspaceControllerTest {
     @Test
     void testDeleteWorkspaceEndpoint() throws Exception {
         WorkspaceDto creation = WorkspaceDto.builder().name("To Delete").build();
-        String result = mockMvc.perform(post("/workspaces")
+        String result = mockMvc.perform(post("/api/v1/workspaces")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(creation)))
                 .andReturn().getResponse().getContentAsString();
         Long workspaceId = ((Number) com.jayway.jsonpath.JsonPath.read(result, "$.data.id")).longValue();
 
-        mockMvc.perform(delete("/workspaces/" + workspaceId))
+        mockMvc.perform(delete("/api/v1/workspaces/" + workspaceId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
 
-        mockMvc.perform(get("/workspaces"))
+        mockMvc.perform(get("/api/v1/workspaces"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(0)));
     }
 
     @Test
     void testGetWorkspaceNotFoundReturns400() throws Exception {
-        mockMvc.perform(get("/workspaces/99"))
+        mockMvc.perform(get("/api/v1/workspaces/99"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Workspace not found with ID: 99")));

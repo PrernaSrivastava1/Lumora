@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Controller exposing endpoints for executing similarity search queries.
  */
 @RestController
-@RequestMapping("/search")
+@RequestMapping("/api/v1/search")
 public class SearchController {
 
     private final SearchEngine searchEngine;

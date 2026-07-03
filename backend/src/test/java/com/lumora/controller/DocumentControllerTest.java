@@ -60,7 +60,7 @@ class DocumentControllerTest {
                 "Hello, semantic vector world!".getBytes()
         );
 
-        mockMvc.perform(multipart("/documents")
+        mockMvc.perform(multipart("/api/v1/documents")
                         .file(mockFile)
                         .param("workspaceId", String.valueOf(testWorkspace.getId())))
                 .andExpect(status().isOk())
@@ -69,7 +69,7 @@ class DocumentControllerTest {
                 .andExpect(jsonPath("$.data.title", is("sample.txt")))
                 .andExpect(jsonPath("$.data.fileType", is("TXT")));
 
-        mockMvc.perform(get("/documents")
+        mockMvc.perform(get("/api/v1/documents")
                         .param("workspaceId", String.valueOf(testWorkspace.getId())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
@@ -86,7 +86,7 @@ class DocumentControllerTest {
                 "binary".getBytes()
         );
 
-        mockMvc.perform(multipart("/documents")
+        mockMvc.perform(multipart("/api/v1/documents")
                         .file(mockFile)
                         .param("workspaceId", String.valueOf(testWorkspace.getId())))
                 .andExpect(status().isBadRequest())
@@ -103,16 +103,16 @@ class DocumentControllerTest {
                 "## Notes".getBytes()
         );
 
-        mockMvc.perform(multipart("/documents")
+        mockMvc.perform(multipart("/api/v1/documents")
                 .file(mockFile)
                 .param("workspaceId", String.valueOf(testWorkspace.getId())));
 
         // Verify loaded doc has ID 1L
-        mockMvc.perform(delete("/documents/1"))
+        mockMvc.perform(delete("/api/v1/documents/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
 
-        mockMvc.perform(get("/documents")
+        mockMvc.perform(get("/api/v1/documents")
                         .param("workspaceId", String.valueOf(testWorkspace.getId())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(0)));

@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/health/ollama")
+@RequestMapping("/api/v1/health/ollama")
 public class OllamaHealthController {
 
     private final OllamaEmbeddingProvider ollamaEmbeddingProvider;
