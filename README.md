@@ -1,255 +1,200 @@
-# VectorDB — Build a Vector Database from Scratch in C++
+# Lumora: Developer-First Semantic Search & Vector Engine
 
-A fully working **Vector Database** built from scratch in C++ with a web UI.  
-Implements **HNSW**, **KD-Tree**, and **Brute Force** search algorithms side-by-side, plus a **RAG pipeline** powered by a local LLM via Ollama.
+Lumora is a lightweight, self-hostable vector search and document retrieval system designed to run entirely on your local machine. It combines custom indexing data structures written in Java with a responsive React dashboard, allowing developers to experiment with vector math, measure query latencies, and search document contents without relying on third-party cloud APIs.
 
-> Built as an educational project to show how production vector databases like Pinecone, Weaviate, and Chroma actually work under the hood.
-
----
-
-## What This Project Does
-
-| Feature | Description |
-|---|---|
-| **3 Search Algorithms** | HNSW (production-grade), KD-Tree, Brute Force — run all three and compare speed |
-| **3 Distance Metrics** | Cosine similarity, Euclidean distance, Manhattan distance |
-| **16D Demo Vectors** | 20 pre-loaded semantic vectors across 4 categories (CS, Math, Food, Sports) |
-| **2D PCA Scatter Plot** | Live visualization of semantic space — watch clusters form |
-| **Real Document Embedding** | Paste any text → Ollama embeds it with `nomic-embed-text` (768D) |
-| **RAG Pipeline** | Ask questions about your documents → HNSW retrieves context → local LLM answers |
-| **Full REST API** | CRUD endpoints: insert, delete, search, benchmark, hnsw-info |
+## Why I Built Lumora
+Most vector databases are complex to run locally and act as "black boxes" when doing similarity matches. I built Lumora to peel back these layers. By implementing traditional spatial indexing (KD-Tree) and modern graph routing (Hierarchical Navigable Small World, or HNSW) directly in clean Java, this project serves as both an educational playground and a practical local search utility. It is aimed at software engineer students, AI hobbyists, and developers who want a quick, transparent, and offline search engine.
 
 ---
 
-## How It Works
+## What Lumora Does (Key Features)
 
-```
-Your Text
-    │
-    ▼
-Ollama (nomic-embed-text)          ← converts text to a 768-dimensional vector
-    │
-    ▼
-HNSW Index (C++)                   ← indexes the vector in a multilayer graph
-    │
-    ▼
-Semantic Search                    ← finds nearest neighbors in vector space
-    │
-    ▼
-Ollama (llama3.2)                  ← reads retrieved chunks, generates an answer
-    │
-    ▼
-Answer
-```
-
-**HNSW (Hierarchical Navigable Small World)** is the same algorithm used by Pinecone, Weaviate, Chroma, and Milvus. It builds a multilayer graph where each layer is progressively sparser — searches start at the top layer and zoom in, achieving O(log N) complexity instead of O(N) for brute force.
+- **Isolated Workspaces**: You can group your data into logical containers called Workspaces. This keeps your experiments separate (e.g., testing one document collection without polluting another).
+- **Multi-Algorithm Vector Search**: Supports three search strategies that you can swap on the fly:
+  - **Brute Force (Exact KNN)**: Exhaustively computes similarity scores against every vector. It is slow for large sets but serves as a ground-truth benchmark for accuracy.
+  - **KD-Tree Search**: Partitions vectors along coordinate axes. Great for low-dimensional exact spatial queries.
+  - **HNSW (Hierarchical Navigable Small World)**: Creates a multi-layer network graph. High-speed approximation suitable for high-dimensional text embeddings.
+- **Smart AUTO Routing**: If you don't know which search algorithm to choose, setting the search mode to `AUTO` lets Lumora select the best fit dynamically based on how many vectors exist in your workspace.
+- **Natural Text Slicing (Chunking)**: When you upload documents (TXT, MD, PDF, or DOCX), Lumora doesn't just store the raw file. It divides the text into readable chunks so that search matches return precise sentences rather than whole pages.
+- **Local AI Embedding Integration**: Connects directly to local Ollama installations, translating user search queries and raw text into vectors using offline models (like `nomic-embed-text`).
 
 ---
 
-# Running Locally
+## How Lumora Works Under the Hood
 
-## Prerequisites
-- **Java JDK 21**
-- **Node.js** (v18+)
-- **Ollama** (with `nomic-embed-text` and `llama3.2` models pulled)
-- **PostgreSQL** (optional, fallback H2 database is enabled by default)
+When you feed a text document into Lumora, it follows a structured processing pipeline:
 
-## Install Steps
-1. Clone the repository and enter the directory.
-2. Build the backend and install frontend dependencies.
-
-## Startup Commands
-
-### One-Command Startup (Windows)
-Run the following PowerShell script from the root folder:
-```powershell
-.\start-dev.ps1
 ```
-
-### Manual Separate Commands
-
-**Database Command (PostgreSQL via Docker)**:
-```bash
-docker-compose up -d postgres
+┌─────────────────┐
+│ Upload Document │ (User drags & drops a TXT, MD, PDF, or DOCX file)
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Text Slicing    │ (Slices text into overlapping 250-word chunks)
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Vectorize Text  │ (Sends chunks to local Ollama API to generate embeddings)
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Store & Index   │ (Saves metadata in database; populates HNSW graph/KD-Tree)
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Search Query    │ (User enters a query; resolved strategy scans vector indices)
+└─────────────────┘
 ```
-
-**Backend Command**:
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-**Frontend Command**:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## URLs
-- **Frontend**: http://localhost:5173
-- **Backend**: http://localhost:8080
-- **Swagger Documentation**: http://localhost:8080/swagger-ui/index.html
-- **Spring Actuator Health**: http://localhost:8080/actuator/health
 
 ---
 
-## Using the Application
+## The Tech Stack
 
-### Tab 1: Search (Demo Vectors)
-
-- Type any concept in the search box: `binary tree`, `sushi`, `basketball`, `calculus`
-- Choose your algorithm: **HNSW**, **KD-Tree**, or **Brute Force**
-- Choose distance metric: **Cosine**, **Euclidean**, or **Manhattan**
-- Click **⚡ SEARCH** — results appear with distances, the matching point glows on the scatter plot
-- Click **▶ COMPARE ALL ALGOS** to run all 3 algorithms and compare their speed
-
-**The scatter plot** shows all 20 vectors projected to 2D using PCA. Notice how the 4 semantic categories (CS, Math, Food, Sports) form distinct clusters — this is what "semantic similarity" looks like visually.
-
-### Tab 2: Documents (Real Embeddings)
-
-This uses Ollama to generate **real 768-dimensional embeddings** from any text.
-
-1. Type a title (e.g., `Operating Systems Notes`)
-2. Paste any text — lecture notes, textbook paragraphs, Wikipedia articles
-3. Click **⚡ EMBED & INSERT**
-4. Long documents are automatically split into overlapping 250-word chunks
-5. Each chunk gets its own embedding and is stored in a separate HNSW index
-
-### Tab 3: Ask AI (RAG Pipeline)
-
-1. Make sure you have inserted some documents in Tab 2 first
-2. Type a question about your documents
-3. Click **🤖 ASK AI**
-
-What happens behind the scenes:
-```
-1. Your question → embedded with nomic-embed-text (768D vector)
-2. HNSW search → finds 3 most semantically similar chunks
-3. Retrieved chunks → sent as context to llama3.2
-4. llama3.2 → generates an answer based only on your documents
-```
-
-The answer streams in with a typewriter effect. Click the **context chips** to see exactly which chunks the AI used.
-
----
-
-## REST API Reference
-
-The server exposes a full REST API at `http://localhost:8080`.
-
-### Demo Vector Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/search?v=f1,f2,...&k=5&metric=cosine&algo=hnsw` | K-NN search |
-| `POST` | `/insert` | Insert a demo vector |
-| `DELETE` | `/delete/:id` | Delete by ID |
-| `GET` | `/items` | List all demo vectors |
-| `GET` | `/benchmark?v=...&k=5&metric=cosine` | Compare all 3 algorithms |
-| `GET` | `/hnsw-info` | HNSW graph structure and layer stats |
-| `GET` | `/stats` | Database statistics |
-
-### Document & RAG Endpoints
-
-| Method | Endpoint | Body | Description |
-|---|---|---|---|
-| `POST` | `/doc/insert` | `{"title":"...","text":"..."}` | Embed and store document |
-| `GET` | `/doc/list` | — | List all stored documents |
-| `DELETE` | `/doc/delete/:id` | — | Delete document chunk |
-| `POST` | `/doc/ask` | `{"question":"...","k":3}` | RAG: retrieve + generate |
-| `GET` | `/status` | — | Ollama status and model info |
-
-### Example: Search via curl
-
-```powershell
-curl "http://localhost:8080/search?v=0.9,0.8,0.7,0.6,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1&k=3&metric=cosine&algo=hnsw"
-```
-
-### Example: Ask a question via curl
-
-```powershell
-curl -X POST http://localhost:8080/doc/ask `
-  -H "Content-Type: application/json" `
-  -d '{"question":"What is dynamic programming?","k":3}'
-```
+- **Java 21 & Spring Boot**: Serves as our backend foundation. Java's modern concurrency utilities make graph traversals safe, while Spring Boot helps build type-safe REST APIs quickly.
+- **React 18 & TypeScript**: Used for the frontend dashboard. TypeScript ensures compile-time safety when parsing API responses, and the interface is styled with clean CSS and Tailwind.
+- **PostgreSQL**: Used for persisting workspaces, document metadata, and text chunks. By default, Lumora runs on a lightweight H2 file fallback database for easy initial setups.
+- **Ollama**: Our offline local model server. It ensures your data never leaves your laptop during embedding generations.
+- **Docker**: Optional setup path for running isolated databases or backend servers.
 
 ---
 
 ## Project Structure
 
 ```
-VectorDB/
-├── main.cpp        ← C++ backend (HNSW, KD-Tree, BruteForce, REST API, RAG)
-├── httplib.h       ← Single-header HTTP server library (cpp-httplib)
-├── index.html      ← Frontend (PCA scatter plot, chat UI, benchmark)
-└── README.md       ← This file
-```
-
-### Architecture (main.cpp)
-
-```
-BruteForce          O(N·d)      Exact, baseline
-KDTree              O(log N)    Exact, axis-aligned partitioning
-HNSW                O(log N)    Approximate, multilayer small-world graph
-
-VectorDB            Unified interface over all 3 (16D demo vectors)
-DocumentDB          HNSW-only index for real Ollama embeddings (768D)
-OllamaClient        HTTP client → /api/embeddings + /api/generate
+Lumora/
+├── backend/                  # Spring Boot application
+│   ├── src/main/java         # Java source files (Algorithms, Services, Controllers)
+│   ├── src/test/java         # JUnit integration and unit tests
+│   └── pom.xml               # Maven configuration and dependencies
+├── frontend/                 # React frontend
+│   ├── src/components        # UI widgets and layout views
+│   ├── src/pages             # Search, Document Upload, and Dashboard pages
+│   └── vite.config.ts        # Vite dev server and API proxy setup
+├── docs/                     # Design documents and walkthroughs
+├── docker-compose.yml        # Setup configuration for PostgreSQL and backend containers
+├── start-dev.ps1             # One-command startup script for Windows users
+└── README.md                 # This guide
 ```
 
 ---
 
-## Algorithm Deep Dive
+## Quick Setup and Run
 
-### HNSW (Hierarchical Navigable Small World)
+### 1. Prerequisites
+Make sure you have these tools ready on your machine:
+- **Java Development Kit (JDK) 21**
+- **Node.js** (v18 or newer)
+- **Ollama** (Verify it is running and pull the embedding model: `ollama pull nomic-embed-text`)
 
-Nodes are inserted into a multilayer graph. Each node randomly gets assigned a maximum layer. Layer 0 has all nodes with many connections; higher layers have fewer nodes (exponentially fewer) with longer-range connections.
-
-**Insert:** Start at the top layer, greedily find the nearest node, drop a layer, repeat. At each layer from your assigned max down to 0, run a beam search (ef_construction=200) and connect to the M nearest neighbors bidirectionally.
-
-**Search:** Same greedy descent from top layer. At layer 0, expand to ef nearest candidates using a priority queue.
-
-**Why it's fast:** The upper layers act like a highway — you quickly get to the right neighborhood, then zoom in at layer 0.
-
-### KD-Tree (K-Dimensional Tree)
-
-Binary space partitioning. Each node splits space along one dimension (cycling through all dimensions). Search prunes entire subtrees when the closest possible point in that subtree can't beat the current best — the "ball within hyperslab" check.
-
-**Weakness:** Degrades with high dimensions (curse of dimensionality). Works well for ≤20D, becomes close to brute force at 768D.
-
-### Why HNSW Wins at High Dimensions
-
-KD-Tree pruning relies on axis-aligned distance bounds. In high dimensions, almost all the space is near the boundary of the hypersphere — no subtrees get pruned. HNSW's graph-based approach doesn't have this problem.
-
----
-
-## Common Issues
-
-| Problem | Fix |
-|---|---|
-| `Ollama: OFFLINE` in header | Run `ollama serve` in a terminal |
-| Embedding takes forever | Ollama is downloading the model on first use, wait 2 min |
-| `g++: command not found` | Add `C:\msys64\ucrt64\bin` to Windows PATH |
-| Port 8080 already in use | Kill the process: `netstat -ano \| findstr 8080` then `taskkill /PID <pid> /F` |
-| LLM answer is slow | Normal — llama3.2 takes 10–30s on a laptop CPU. Use llama3.2:1b for faster answers |
-
-### Use a Smaller/Faster LLM
-
-If llama3.2 is too slow on your laptop, switch to the 1B model:
-
+### 2. Automatic Startup (Windows)
+We provide a PowerShell script to run everything. Just run this command from the root of the project:
 ```powershell
-ollama pull llama3.2:1b
+.\start-dev.ps1
+```
+This opens two shell windows: one building and launching the Spring Boot backend, and the other running the Vite development server.
+
+### 3. Manual Separate Commands
+
+If you prefer launching components manually, open separate terminal windows and run:
+
+**Backend**:
+```bash
+cd backend
+mvn spring-boot:run
 ```
 
-Then edit [main.cpp](main.cpp) line where `genModel` is set:
-```cpp
-std::string genModel = "llama3.2:1b";   // change this
+**Frontend**:
+```bash
+cd frontend
+npm install
+npm run dev
 ```
-Recompile and restart.
 
 ---
 
-## License
+## Core URLs & Endpoints
 
-MIT — use this however you want.
+- **Frontend Interface**: [http://localhost:5173](http://localhost:5173)
+- **REST Base API**: [http://localhost:8080](http://localhost:8080)
+- **Interactive Swagger Docs**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- **Health check endpoint**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+
+---
+
+## Application Screen Layouts (Placeholders)
+
+Below are placeholders for the visual dashboards once running:
+- **`[Dashboard Screenshot]`**: Main statistics on indices, vector count, and health.
+- **`[Workspace Manager]`**: Create, edit, and destroy data partition workspaces.
+- **`[Document Processor]`**: Upload text files and track background chunking state.
+- **`[Semantic Search Console]`**: Configure top-K parameters, distance metrics, and swap algorithms.
+
+---
+
+## API Quick Reference
+
+### 1. Create Workspace
+- **Method**: `POST`
+- **Endpoint**: `/workspaces`
+- **Payload**:
+  ```json
+  {
+    "name": "Research Papers",
+    "description": "Store vector embeddings of math documents"
+  }
+  ```
+
+### 2. Upload Document
+- **Method**: `POST`
+- **Endpoint**: `/documents/upload`
+- **Payload**: `multipart/form-data` with files and `workspaceId` fields.
+
+### 3. Execute Vector Search
+- **Method**: `POST`
+- **Endpoint**: `/search`
+- **Payload**:
+  ```json
+  {
+    "workspaceId": 1,
+    "query": "artificial intelligence",
+    "algorithm": "AUTO",
+    "metric": "COSINE",
+    "topK": 5
+  }
+  ```
+
+---
+
+## Communication Architecture
+
+```
+┌──────────────────┐               ┌──────────────────┐
+│ React Frontend   │  HTTP / JSON  │ Spring Backend   │
+│ (Vite Port 5173) ├──────────────►│ (Tomcat Port 8080)│
+└──────────────────┘               └────────┬────────┬┘
+                                            │        │
+                                 JDBC Query │        │ HTTP Request
+                                            ▼        ▼
+                               ┌──────────────┐    ┌──────────────┐
+                               │ Database     │    │ Local Ollama │
+                               │ (H2 / PG)    │    │ (Port 11434) │
+                               └──────────────┘    └──────────────┘
+```
+
+---
+
+## What You Can Learn from This Project
+By exploring the Lumora codebase, you can learn:
+1. **How to implement graph networks**: Read the HNSW implementation to see how nodes connect across virtual levels.
+2. **Dynamic Strategy Routing**: Understand how the Strategy Pattern routes user queries based on data density.
+3. **Local embedding architectures**: Learn how text chunking and vector creation work without invoking paid cloud providers.
+
+---
+
+## Future Improvements
+- **Real-time Graph Visualizer**: A canvas UI showing HNSW query traversals level-by-layer.
+- **Metadata Filters**: Support SQL-like filters alongside vector distance measurements.
