@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@org.springframework.security.test.context.support.WithMockUser(username = "testuser")
 class SearchControllerTest {
 
     @Autowired
@@ -49,6 +50,9 @@ class SearchControllerTest {
     @Autowired
     private VectorStore vectorStore;
 
+    @Autowired
+    private com.lumora.repository.UserRepository userRepository;
+
     private Workspace workspace;
     private DocumentChunk chunk;
 
@@ -56,7 +60,21 @@ class SearchControllerTest {
     void setUp() {
         vectorStore.getIndexManager().clearAll();
 
-        workspace = Workspace.builder().name("Search Test Workspace").build();
+        com.lumora.model.User testUser = userRepository.findByUsername("testuser").orElse(null);
+        if (testUser == null) {
+            testUser = com.lumora.model.User.builder()
+                    .username("testuser")
+                    .email("testuser@example.com")
+                    .password("password")
+                    .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
+                    .build();
+            testUser = userRepository.save(testUser);
+        }
+
+        workspace = Workspace.builder()
+                .name("Search Test Workspace")
+                .owner(testUser)
+                .build();
         workspace = workspaceRepository.save(workspace);
 
         Document doc = Document.builder()

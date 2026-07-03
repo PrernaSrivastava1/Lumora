@@ -44,6 +44,10 @@ public class Workspace extends BaseEntity {
     @Builder.Default
     private int totalVectors = 0;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Document> documents = new ArrayList<>();

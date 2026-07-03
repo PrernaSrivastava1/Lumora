@@ -11,52 +11,76 @@ import Benchmark from '@/pages/Benchmark'
 import Settings from '@/pages/Settings'
 import NotFound from '@/pages/NotFound'
 import ErrorPage from '@/components/common/ErrorPage'
+import Login from '@/pages/Login'
+import Register from '@/pages/Register'
+import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
+import Profile from '@/pages/Profile'
 
 export const router = createBrowserRouter([
   {
+    path: '/login',
+    element: <Login />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/register',
+    element: <Register />,
+    errorElement: <ErrorPage />,
+  },
+  {
     path: '/',
-    element: <PageLayout />,
+    element: <ProtectedRoute />,
     errorElement: <ErrorPage />,
     children: [
       {
         path: '',
-        element: <Dashboard />,
-      },
-      {
-        path: 'workspaces',
-        element: <Workspaces />,
-      },
-      {
-        path: 'documents',
-        element: <Documents />,
-      },
-      {
-        path: 'documents/:id',
-        element: <DocumentDetails />,
-      },
-      {
-        path: 'search',
-        element: <Search />,
-      },
-      {
-        path: 'chat',
-        element: <AIChat />,
-      },
-      {
-        path: 'analytics',
-        element: <Analytics />,
-      },
-      {
-        path: 'benchmark',
-        element: <Benchmark />,
-      },
-      {
-        path: 'settings',
-        element: <Settings />,
-      },
-      {
-        path: '*',
-        element: <NotFound />,
+        element: <PageLayout />,
+        children: [
+          {
+            path: '',
+            element: <Dashboard />,
+          },
+          {
+            path: 'workspaces',
+            element: <Workspaces />,
+          },
+          {
+            path: 'documents',
+            element: <Documents />,
+          },
+          {
+            path: 'documents/:id',
+            element: <DocumentDetails />,
+          },
+          {
+            path: 'search',
+            element: <Search />,
+          },
+          {
+            path: 'chat',
+            element: <AIChat />,
+          },
+          {
+            path: 'analytics',
+            element: <Analytics />,
+          },
+          {
+            path: 'benchmark',
+            element: <Benchmark />,
+          },
+          {
+            path: 'settings',
+            element: <Settings />,
+          },
+          {
+            path: 'profile',
+            element: <Profile />,
+          },
+          {
+            path: '*',
+            element: <NotFound />,
+          },
+        ],
       },
     ],
   },

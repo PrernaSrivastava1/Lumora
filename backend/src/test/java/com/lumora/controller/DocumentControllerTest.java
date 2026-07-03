@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@org.springframework.security.test.context.support.WithMockUser(username = "testuser")
 class DocumentControllerTest {
 
     @Autowired
@@ -38,12 +39,27 @@ class DocumentControllerTest {
     @Autowired
     private DocumentRepository documentRepository;
 
+    @Autowired
+    private com.lumora.repository.UserRepository userRepository;
+
     private Workspace testWorkspace;
 
     @BeforeEach
     void setUp() {
         documentRepository.deleteAll();
         workspaceRepository.deleteAll();
+
+        com.lumora.model.User testUser = userRepository.findByUsername("testuser").orElse(null);
+        if (testUser == null) {
+            testUser = com.lumora.model.User.builder()
+                    .username("testuser")
+                    .email("testuser@example.com")
+                    .password("password")
+                    .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
+                    .build();
+            testUser = userRepository.save(testUser);
+        }
+
         com.lumora.dto.WorkspaceResponseDto dto = workspaceService.createWorkspace(WorkspaceDto.builder()
                 .name("Demo Space")
                 .description("Desc")

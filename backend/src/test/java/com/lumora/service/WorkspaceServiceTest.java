@@ -26,22 +26,43 @@ class WorkspaceServiceTest {
     @Mock
     private WorkspaceRepository workspaceRepository;
 
+    @Mock
+    private com.lumora.repository.UserRepository userRepository;
+
     @InjectMocks
     private WorkspaceService workspaceService;
 
     private Workspace sampleWorkspace;
+    private com.lumora.model.User sampleUser;
 
     @BeforeEach
     void setUp() {
+        sampleUser = com.lumora.model.User.builder()
+                .id(1L)
+                .username("testuser")
+                .email("testuser@example.com")
+                .build();
+
         sampleWorkspace = Workspace.builder()
                 .id(1L)
                 .name("Test Workspace")
                 .description("Test Description")
+                .owner(sampleUser)
                 .totalDocuments(5)
                 .totalVectors(50)
                 .build();
         sampleWorkspace.setCreatedAt(LocalDateTime.now());
         sampleWorkspace.setUpdatedAt(LocalDateTime.now());
+
+        // Mock security context
+        org.springframework.security.core.Authentication auth = mock(org.springframework.security.core.Authentication.class);
+        org.springframework.security.core.userdetails.UserDetails userDetails = 
+            new org.springframework.security.core.userdetails.User("testuser", "password", java.util.Collections.emptyList());
+        when(auth.getPrincipal()).thenReturn(userDetails);
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(auth);
+
+        // Stub user repository
+        lenient().when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
     }
 
     @Test
