@@ -25,3 +25,29 @@ export interface Document {
   processingStatus: 'READY' | 'UPLOADING' | 'PROCESSING' | 'FAILED'
   totalChunks: number
 }
+
+export interface SearchResult {
+  documentId?: number
+  chunkId: number
+  score: number
+  matchedText?: string
+  explanation: string
+}
+
+export interface SearchResponse {
+  query: string
+  algorithm: string
+  metric: string
+  executionTime: number
+  resultCount: number
+  results: SearchResult[]
+}
+
+export interface SearchRequest {
+  query: string
+  algorithm: string
+  metric: string
+  topK: number
+  workspaceId: number
+}
+

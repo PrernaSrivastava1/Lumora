@@ -10,7 +10,9 @@ import com.semanticvault.algorithms.common.vector.VectorValidator;
 import com.semanticvault.model.AlgorithmType;
 import com.semanticvault.model.SearchRequest;
 import com.semanticvault.model.SearchResult;
+import com.semanticvault.repository.ChunkRepository;
 import com.semanticvault.repository.VectorStore;
+import com.semanticvault.service.EmbeddingService;
 import com.semanticvault.service.SearchRankingService;
 import org.springframework.stereotype.Component;
 
@@ -26,11 +28,18 @@ public class BruteForceSearchStrategy extends AbstractSearchStrategy {
 
     private final VectorStore vectorStore;
     private final SearchRankingService rankingService;
+    private final EmbeddingService embeddingService;
+    private final ChunkRepository chunkRepository;
 
-    public BruteForceSearchStrategy(VectorStore vectorStore, SearchRankingService rankingService) {
+    public BruteForceSearchStrategy(VectorStore vectorStore,
+                                    SearchRankingService rankingService,
+                                    EmbeddingService embeddingService,
+                                    ChunkRepository chunkRepository) {
         super();
         this.vectorStore = vectorStore;
         this.rankingService = rankingService;
+        this.embeddingService = embeddingService;
+        this.chunkRepository = chunkRepository;
     }
 
     @Override
@@ -44,13 +53,25 @@ public class BruteForceSearchStrategy extends AbstractSearchStrategy {
             throw new SearchException("Top-K parameter must be greater than 0");
         }
 
-        // Parse query vector values from the textual query field
-        float[] queryVals = VectorUtils.parse(request.getQuery());
-        VectorValidator.validate(queryVals);
+        // Auto-load index if it hasn't been loaded in memory yet
+        Long workspaceId = request.getWorkspaceId();
+        if (workspaceId != null && !vectorStore.getIndexManager().hasIndex(workspaceId)) {
+            vectorStore.getIndexManager().loadWorkspaceVectors(workspaceId);
+        }
 
+        // Parse query vector or generate embedding
+        float[] queryVals;
+        try {
+            queryVals = VectorUtils.parse(request.getQuery());
+        } catch (Exception e) {
+            // If it's not a comma-separated list of floats, treat it as a natural language text query
+            queryVals = embeddingService.generateEmbedding(request.getQuery());
+        }
+
+        VectorValidator.validate(queryVals);
         Vector queryVector = new Vector(null, queryVals, null);
 
-        List<Vector> allVectors = vectorStore.findAll(request.getWorkspaceId());
+        List<Vector> allVectors = vectorStore.findAll(workspaceId);
         if (allVectors.isEmpty()) {
             return List.of();
         }
@@ -75,6 +96,19 @@ public class BruteForceSearchStrategy extends AbstractSearchStrategy {
                 })
                 .collect(Collectors.toList());
 
-        return rankingService.rank(rawResults, request.getTopK());
+        List<SearchResult> rankedResults = rankingService.rank(rawResults, request.getTopK());
+
+        // Connect embeddings back to document chunks
+        for (SearchResult result : rankedResults) {
+            chunkRepository.findById(result.getChunkId()).ifPresent(chunk -> {
+                result.setMatchedText(chunk.getContent());
+                if (chunk.getDocument() != null) {
+                    result.setDocumentId(chunk.getDocument().getId());
+                    result.setExplanation(result.getExplanation() + " (Doc: " + chunk.getDocument().getTitle() + ")");
+                }
+            });
+        }
+
+        return rankedResults;
     }
 }
