@@ -26,7 +26,7 @@ export default function Search() {
 
   // Search parameters
   const [query, setQuery] = useState('')
-  const [algorithm, setAlgorithm] = useState<'BRUTE_FORCE' | 'HNSW' | 'KD_TREE' | 'HYBRID'>('BRUTE_FORCE')
+  const [algorithm, setAlgorithm] = useState<'AUTO' | 'BRUTE_FORCE' | 'HNSW' | 'KD_TREE' | 'HYBRID'>('AUTO')
   const [metric, setMetric] = useState<'COSINE' | 'EUCLIDEAN' | 'MANHATTAN'>('COSINE')
   const [topK, setTopK] = useState(5)
 
@@ -139,6 +139,7 @@ export default function Search() {
             </span>
             <div className="flex flex-wrap gap-2">
               {[
+                { name: 'Auto (Smart)', val: 'AUTO' },
                 { name: 'Brute Force', val: 'BRUTE_FORCE' },
                 { name: 'HNSW', val: 'HNSW' },
                 { name: 'KD-Tree', val: 'KD_TREE' },
@@ -227,7 +228,15 @@ export default function Search() {
             Query Results
           </h2>
           {searchResponse && (
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Layers className="h-3.5 w-3.5 text-indigo-400" />
+                Algorithm: <span className="font-semibold text-foreground">{searchResponse.algorithm}</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <Sliders className="h-3.5 w-3.5 text-fuchsia-400" />
+                Dimension: <span className="font-semibold text-foreground">{searchResponse.embeddingDimension}D</span>
+              </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-cyan-400" />
                 Latency: <span className="font-semibold text-foreground">{searchResponse.executionTime} ms</span>

@@ -29,5 +29,7 @@ public class SearchResponse {
 
     private int resultCount;
 
+    private int embeddingDimension;
+
     private List<SearchResult> results;
 }

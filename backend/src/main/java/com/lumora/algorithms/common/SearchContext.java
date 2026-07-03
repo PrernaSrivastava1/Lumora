@@ -15,9 +15,11 @@ import java.util.Optional;
 public class SearchContext {
 
     private final Map<AlgorithmType, SearchStrategy> strategies;
+    private final com.lumora.repository.VectorStore vectorStore;
 
-    public SearchContext(Map<AlgorithmType, SearchStrategy> strategies) {
+    public SearchContext(Map<AlgorithmType, SearchStrategy> strategies, com.lumora.repository.VectorStore vectorStore) {
         this.strategies = new EnumMap<>(strategies);
+        this.vectorStore = vectorStore;
     }
 
     /**
@@ -37,9 +39,26 @@ public class SearchContext {
             throw new SearchException("Search algorithm type is required");
         }
 
-        SearchStrategy strategy = Optional.ofNullable(strategies.get(type))
-                .orElseThrow(() -> new SearchException("Unavailable search algorithm strategy: " + type));
+        if (type == AlgorithmType.AUTO) {
+            int size = vectorStore.findAll(request.getWorkspaceId()).size();
+            if (size < 50) {
+                type = AlgorithmType.BRUTE_FORCE;
+            } else if (size < 500) {
+                type = AlgorithmType.KD_TREE;
+            } else {
+                type = AlgorithmType.HNSW;
+            }
+        }
 
-        return strategy.search(request);
+        final AlgorithmType resolvedType = type;
+        SearchStrategy strategy = Optional.ofNullable(strategies.get(resolvedType))
+                .orElseThrow(() -> new SearchException("Unavailable search algorithm strategy: " + resolvedType));
+
+        SearchResponse response = strategy.search(request);
+        // Explicitly set the resolved strategy type in the response if it was AUTO
+        if (request.getAlgorithm() == AlgorithmType.AUTO) {
+            response.setAlgorithm(resolvedType);
+        }
+        return response;
     }
 }

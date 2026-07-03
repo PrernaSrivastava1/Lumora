@@ -71,7 +71,7 @@ class SearchArchitectureTest {
     void testSearchContextThrowsExceptionForMissingStrategy() {
         // Build a SearchContext manually with a missing strategy mapping
         Map<AlgorithmType, SearchStrategy> customMap = new EnumMap<>(AlgorithmType.class);
-        SearchContext emptyContext = new SearchContext(customMap);
+        SearchContext emptyContext = new SearchContext(customMap, null);
 
         SearchRequest request = validRequestBuilder.algorithm(AlgorithmType.BRUTE_FORCE).build();
 

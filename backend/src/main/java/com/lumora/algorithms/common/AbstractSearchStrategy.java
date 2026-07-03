@@ -20,6 +20,9 @@ public abstract class AbstractSearchStrategy implements SearchStrategy {
 
     private final Validator validator;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.lumora.service.EmbeddingService embeddingService;
+
     protected AbstractSearchStrategy() {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             this.validator = factory.getValidator();
@@ -43,11 +46,21 @@ public abstract class AbstractSearchStrategy implements SearchStrategy {
 
         long executionTimeMs = (endTime - startTime) / 1_000_000; // Millisecond resolution
 
+        int dimension = 0;
+        try {
+            dimension = com.lumora.algorithms.common.vector.VectorUtils.parse(request.getQuery()).length;
+        } catch (Exception e) {
+            if (embeddingService != null) {
+                dimension = embeddingService.getActiveDimension();
+            }
+        }
+
         return SearchResponse.builder()
                 .query(request.getQuery())
                 .algorithm(getAlgorithmType())
                 .metric(request.getMetric())
                 .executionTime(executionTimeMs)
+                .embeddingDimension(dimension)
                 .resultCount(results != null ? results.size() : 0)
                 .results(results)
                 .build();

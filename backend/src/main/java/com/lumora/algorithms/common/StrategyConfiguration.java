@@ -22,11 +22,11 @@ public class StrategyConfiguration {
      * @return registered SearchContext bean
      */
     @Bean
-    public SearchContext searchContext(List<SearchStrategy> strategyList) {
+    public SearchContext searchContext(List<SearchStrategy> strategyList, com.lumora.repository.VectorStore vectorStore) {
         Map<AlgorithmType, SearchStrategy> strategiesMap = new EnumMap<>(AlgorithmType.class);
         for (SearchStrategy strategy : strategyList) {
             strategiesMap.put(strategy.getAlgorithmType(), strategy);
         }
-        return new SearchContext(strategiesMap);
+        return new SearchContext(strategiesMap, vectorStore);
     }
 }
