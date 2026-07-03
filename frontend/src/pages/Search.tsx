@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useWorkspaces } from '@/hooks/useWorkspaces'
 import { searchService } from '@/services/searchService'
-import type { SearchResponse, SearchResult } from '@/types'
+import type { SearchResponse } from '@/types'
 import {
   Search as SearchIcon,
   Sliders,

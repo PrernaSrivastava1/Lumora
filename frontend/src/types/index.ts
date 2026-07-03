@@ -40,6 +40,7 @@ export interface SearchResponse {
   metric: string
   executionTime: number
   resultCount: number
+  embeddingDimension?: number
   results: SearchResult[]
 }
 
