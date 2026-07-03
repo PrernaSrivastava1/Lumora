@@ -46,6 +46,7 @@ class AuthControllerTest {
         jdbcTemplate.execute("DELETE FROM refresh_tokens");
         jdbcTemplate.execute("DELETE FROM user_profiles");
         jdbcTemplate.execute("DELETE FROM user_roles");
+        jdbcTemplate.execute("DELETE FROM vector_embeddings");
         jdbcTemplate.execute("DELETE FROM document_chunks");
         jdbcTemplate.execute("DELETE FROM documents");
         jdbcTemplate.execute("DELETE FROM workspaces");

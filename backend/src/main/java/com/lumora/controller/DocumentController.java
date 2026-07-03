@@ -38,6 +38,12 @@ public class DocumentController {
         return ApiResponse.success("Retrieved document details", doc);
     }
 
+    @PostMapping("/{id}/retry")
+    public ApiResponse<Void> retryDocument(@PathVariable Long id) {
+        documentService.retryDocument(id);
+        return ApiResponse.success("Document retry initiated successfully", null);
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteDocument(@PathVariable Long id) {
         documentService.deleteDocument(id);

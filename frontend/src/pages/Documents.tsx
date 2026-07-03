@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useWorkspaces } from '@/hooks/useWorkspaces'
-import { useDocuments, useUploadDocument, useDeleteDocument } from '@/hooks/useDocuments'
+import { useDocuments, useUploadDocument, useDeleteDocument, useRetryDocument } from '@/hooks/useDocuments'
 import type { Document } from '@/types'
 import {
   FileUp,
@@ -14,6 +14,7 @@ import {
   FolderOpen,
   Layers,
   X,
+  RefreshCw,
 } from 'lucide-react'
 
 export default function Documents() {
@@ -28,6 +29,7 @@ export default function Documents() {
   const { data: documents, isLoading, isError, error } = useDocuments(selectedWorkspaceId)
   const uploadMutation = useUploadDocument()
   const deleteMutation = useDeleteDocument()
+  const retryMutation = useRetryDocument()
 
   // Drag and Drop State
   const [dragActive, setDragActive] = useState(false)
@@ -295,43 +297,66 @@ export default function Documents() {
                                 return (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-semibold text-green-500 border border-green-500/20">
                                     <CheckCircle2 className="h-3.5 w-3.5" />
-                                    Ready
+                                    Ready (100%)
                                   </span>
                                 )
                               case 'FAILED':
                                 return (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-500 border border-red-500/20">
+                                  <span 
+                                    className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-500 border border-red-500/20 cursor-help"
+                                    title={doc.failureReason || 'An unknown error occurred during text extraction or indexing.'}
+                                  >
                                     <AlertCircle className="h-3.5 w-3.5" />
                                     Failed
                                   </span>
                                 )
-                              case 'UPLOADING':
-                              case 'PROCESSING':
+                              case 'UPLOADED':
                                 return (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 px-2.5 py-0.5 text-xs font-semibold text-slate-400 border border-slate-500/20">
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    Processing
+                                    Uploaded (10%)
+                                  </span>
+                                )
+                              case 'VALIDATING':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-semibold text-orange-400 border border-orange-500/20">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Validating (20%)
+                                  </span>
+                                )
+                              case 'EXTRACTING_TEXT':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500/10 px-2.5 py-0.5 text-xs font-semibold text-yellow-400 border border-yellow-500/20">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Extracting (35%)
+                                  </span>
+                                )
+                              case 'CLEANING_TEXT':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-400 border border-amber-500/20">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Cleaning (50%)
                                   </span>
                                 )
                               case 'CHUNKING':
                                 return (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-400 border border-indigo-500/20">
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    Chunking
+                                    Chunking (65%)
                                   </span>
                                 )
-                              case 'EMBEDDING':
+                              case 'GENERATING_EMBEDDINGS':
                                 return (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-xs font-semibold text-cyan-400 border border-cyan-500/20">
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    Embedding
+                                    Vectorizing (80%)
                                   </span>
                                 )
                               case 'INDEXING':
                                 return (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-fuchsia-500/10 px-2.5 py-0.5 text-xs font-semibold text-fuchsia-400 border border-fuchsia-500/20">
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    Indexing
+                                    Indexing (95%)
                                   </span>
                                 )
                               default:
@@ -345,6 +370,16 @@ export default function Documents() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-1.5">
+                            {doc.processingStatus === 'FAILED' && (
+                              <button
+                                onClick={() => retryMutation.mutate({ id: doc.id, workspaceId: selectedWorkspaceId })}
+                                disabled={retryMutation.isPending}
+                                className="rounded p-1 text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 transition-all disabled:opacity-50"
+                                title="Retry processing"
+                              >
+                                <RefreshCw className={`h-4 w-4 ${retryMutation.isPending ? 'animate-spin' : ''}`} />
+                              </button>
+                            )}
                             <Link
                               to={`/documents/${doc.id}`}
                               className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"

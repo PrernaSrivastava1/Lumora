@@ -29,7 +29,7 @@ public class DocumentService {
     private final WorkspaceRepository workspaceRepository;
     private final ProcessingService processingService;
     private final ChunkingService chunkingService;
-    private final DocumentProcessingPipeline documentProcessingPipeline;
+    private final DocumentProcessingOrchestrator documentProcessingOrchestrator;
     private final Path uploadPath;
 
     private static final Set<String> SUPPORTED_EXTENSIONS = Set.of("pdf", "docx", "txt", "md");
@@ -38,12 +38,12 @@ public class DocumentService {
                            WorkspaceRepository workspaceRepository,
                            ProcessingService processingService,
                            ChunkingService chunkingService,
-                           DocumentProcessingPipeline documentProcessingPipeline) {
+                           DocumentProcessingOrchestrator documentProcessingOrchestrator) {
         this.documentRepository = documentRepository;
         this.workspaceRepository = workspaceRepository;
         this.processingService = processingService;
         this.chunkingService = chunkingService;
-        this.documentProcessingPipeline = documentProcessingPipeline;
+        this.documentProcessingOrchestrator = documentProcessingOrchestrator;
         this.uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
         try {
             Files.createDirectories(uploadPath);
@@ -98,7 +98,7 @@ public class DocumentService {
                 .fileType(extension.toUpperCase())
                 .size(file.getSize())
                 .uploadTime(LocalDateTime.now())
-                .processingStatus(ProcessingStatus.UPLOADING)
+                .processingStatus(ProcessingStatus.UPLOADED)
                 .totalChunks(0)
                 .build();
 
@@ -107,9 +107,10 @@ public class DocumentService {
         try {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             // Trigger asynchronous processing pipeline
-            documentProcessingPipeline.processAsynchronously(savedDoc.getId(), targetLocation, extension.toUpperCase());
+            documentProcessingOrchestrator.processAsynchronously(savedDoc.getId(), targetLocation, extension.toUpperCase());
         } catch (IOException e) {
             savedDoc.setProcessingStatus(ProcessingStatus.FAILED);
+            savedDoc.setFailureReason(e.getMessage());
             documentRepository.save(savedDoc);
             throw new RuntimeException("Failed to store or process file", e);
         }
@@ -119,6 +120,14 @@ public class DocumentService {
         workspaceRepository.save(workspace);
 
         return EntityMapper.toDto(savedDoc);
+    }
+
+    public void retryDocument(Long documentId) {
+        Document doc = findEntityById(documentId);
+        doc.setProcessingStatus(ProcessingStatus.UPLOADED);
+        doc.setFailureReason(null);
+        documentRepository.saveAndFlush(doc);
+        documentProcessingOrchestrator.retry(documentId);
     }
 
     public void deleteDocument(Long id) {

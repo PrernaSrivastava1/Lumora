@@ -30,5 +30,10 @@ export const documentService = {
     const response = await apiClient.delete<ApiResponse<void>>(`/documents/${id}`)
     return response.data
   },
+
+  retryDocument: async (id: number): Promise<ApiResponse<void>> => {
+    const response = await apiClient.post<ApiResponse<void>>(`/documents/${id}/retry`)
+    return response.data
+  },
 }
 export default documentService

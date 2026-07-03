@@ -48,3 +48,14 @@ export function useDeleteDocument() {
     },
   })
 }
+
+export function useRetryDocument() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id }: { id: number; workspaceId: number }) =>
+      documentService.retryDocument(id),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['documents', variables.workspaceId] })
+    },
+  })
+}

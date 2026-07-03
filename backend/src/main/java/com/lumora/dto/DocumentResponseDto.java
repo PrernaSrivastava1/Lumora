@@ -23,6 +23,9 @@ public class DocumentResponseDto {
     private long size;
     private LocalDateTime uploadTime;
     private String processingStatus;
+    private String failureReason;
+    private LocalDateTime processingStart;
+    private LocalDateTime processingEnd;
     private int totalChunks;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
