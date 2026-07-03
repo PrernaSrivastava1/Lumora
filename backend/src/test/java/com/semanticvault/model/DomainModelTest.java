@@ -30,11 +30,11 @@ class DomainModelTest {
                 .id(1L)
                 .name("Default Space")
                 .description("Test Description")
-                .createdAt(now)
-                .updatedAt(now)
                 .totalDocuments(5)
                 .totalVectors(100)
                 .build();
+        workspace.setCreatedAt(now);
+        workspace.setUpdatedAt(now);
 
         assertEquals(1L, workspace.getId());
         assertEquals("Default Space", workspace.getName());
@@ -47,9 +47,9 @@ class DomainModelTest {
         // Test validation constraint violation
         Workspace invalidWorkspace = Workspace.builder()
                 .name("") // Blank name violation
-                .createdAt(null) // Null date violation
                 .totalDocuments(-1) // Negative documents violation
                 .build();
+        invalidWorkspace.setCreatedAt(null); // Null date violation
 
         Set<ConstraintViolation<Workspace>> badViolations = validator.validate(invalidWorkspace);
         assertFalse(badViolations.isEmpty());
@@ -61,7 +61,7 @@ class DomainModelTest {
         LocalDateTime now = LocalDateTime.now();
         Document doc = Document.builder()
                 .id(10L)
-                .workspaceId(1L)
+                .workspace(Workspace.builder().id(1L).build())
                 .title("LLM Architectures")
                 .originalFileName("llm_arch.pdf")
                 .fileType("pdf")
@@ -85,11 +85,11 @@ class DomainModelTest {
                 .id(100L)
                 .modelName("nomic-embed-text")
                 .dimensions(3)
-                .vector(vector)
-                .createdAt(LocalDateTime.now())
                 .build();
+        emb.setVectorFromFloats(vector);
+        emb.setCreatedAt(LocalDateTime.now());
 
-        assertArrayEquals(vector, emb.getVector());
+        assertArrayEquals(vector, emb.getVectorAsFloats());
         assertEquals(3, emb.getDimensions());
 
         Set<ConstraintViolation<VectorEmbedding>> violations = validator.validate(emb);
@@ -98,9 +98,12 @@ class DomainModelTest {
 
     @Test
     void testToStringAndEqualsHashCode() {
-        Workspace w1 = Workspace.builder().id(1L).name("A").createdAt(LocalDateTime.MIN).build();
-        Workspace w2 = Workspace.builder().id(1L).name("A").createdAt(LocalDateTime.MIN).build();
-        Workspace w3 = Workspace.builder().id(2L).name("B").createdAt(LocalDateTime.MIN).build();
+        Workspace w1 = Workspace.builder().id(1L).name("A").build();
+        w1.setCreatedAt(LocalDateTime.MIN);
+        Workspace w2 = Workspace.builder().id(1L).name("A").build();
+        w2.setCreatedAt(LocalDateTime.MIN);
+        Workspace w3 = Workspace.builder().id(2L).name("B").build();
+        w3.setCreatedAt(LocalDateTime.MIN);
 
         assertEquals(w1, w2);
         assertNotEquals(w1, w3);

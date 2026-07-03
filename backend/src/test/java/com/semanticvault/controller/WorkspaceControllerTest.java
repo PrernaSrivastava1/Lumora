@@ -36,7 +36,7 @@ class WorkspaceControllerTest {
 
     @BeforeEach
     void setUp() {
-        workspaceRepository.clear();
+        workspaceRepository.deleteAll();
     }
 
     @Test

@@ -42,12 +42,13 @@ class DocumentControllerTest {
 
     @BeforeEach
     void setUp() {
-        documentRepository.clear();
-        workspaceRepository.clear();
-        testWorkspace = workspaceService.createWorkspace(WorkspaceDto.builder()
+        documentRepository.deleteAll();
+        workspaceRepository.deleteAll();
+        com.semanticvault.dto.WorkspaceResponseDto dto = workspaceService.createWorkspace(WorkspaceDto.builder()
                 .name("Demo Space")
                 .description("Desc")
                 .build());
+        testWorkspace = workspaceRepository.findById(dto.getId()).orElseThrow();
     }
 
     @Test

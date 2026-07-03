@@ -1,5 +1,6 @@
 package com.semanticvault.rag.chunking;
 
+import com.semanticvault.model.Document;
 import com.semanticvault.model.DocumentChunk;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +51,7 @@ public class SemanticChunker implements ChunkingStrategy {
             int tokens = chunkContent.trim().isEmpty() ? 0 : chunkContent.trim().split("\\s+").length;
 
             chunks.add(DocumentChunk.builder()
-                    .documentId(documentId)
+                    .document(Document.builder().id(documentId).build())
                     .chunkIndex(chunkIdx++)
                     .content(chunkContent)
                     .tokenCount(tokens)
