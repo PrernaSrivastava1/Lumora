@@ -136,6 +136,17 @@ Lumora uses a production-ready JWT stateless authentication flow with sliding-wi
 
 ---
 
+## Retrieval-Augmented Generation (RAG) Flow
+
+Lumora implements a complete local RAG query pipeline powered by its custom Java indexing engine and offline Ollama LLMs:
+1. **User Input**: A user inputs a natural language question in the AI Chat interface.
+2. **Context Retrieval**: The backend generates a query embedding and executes a vector similarity search across the selected workspace index.
+3. **Prompt Synthesis**: The `PromptBuilder` retrieves the top-K document chunk matches and constructs a contextual system prompt.
+4. **Answer Generation**: The prompt is dispatched to a local Ollama server (running `llama3` or similar model) which synthesizes a markdown-formatted response.
+5. **Citations Display**: The generated answer is presented in the chat along with clickable references to the exact source chunks used.
+
+---
+
 ## API Quick Reference
 
 ### 1. User Registration

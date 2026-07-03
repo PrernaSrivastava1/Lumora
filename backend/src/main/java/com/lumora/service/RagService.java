@@ -48,7 +48,8 @@ public class RagService {
         SearchRequest searchRequest = SearchRequest.builder()
                 .query(request.getQuery())
                 .workspaceId(request.getWorkspaceId())
-                .algorithm(request.getAlgorithm())
+                .algorithm(AlgorithmType.valueOf(request.getAlgorithm().toUpperCase()))
+                .metric(DistanceMetric.COSINE)
                 .topK(request.getTopK())
                 .build();
 
