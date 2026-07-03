@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { User, KeyRound, Bio, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { User, KeyRound, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
 import apiClient from '@/services/api'
 
 export default function Profile() {

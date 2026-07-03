@@ -41,6 +41,7 @@ logging:
 ollama:
   base-url: http://localhost:11434
   model: nomic-embed-text
+  llm-model: llama3
   timeout-ms: 10000
   max-retries: 3
   retry-delay-ms: 1000
