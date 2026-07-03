@@ -50,7 +50,16 @@ public class Document extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "processing_status", nullable = false)
     @Builder.Default
-    private ProcessingStatus processingStatus = ProcessingStatus.UPLOADING;
+    private ProcessingStatus processingStatus = ProcessingStatus.UPLOADED;
+
+    @Column(name = "failure_reason", length = 1000)
+    private String failureReason;
+
+    @Column(name = "processing_start")
+    private LocalDateTime processingStart;
+
+    @Column(name = "processing_end")
+    private LocalDateTime processingEnd;
 
     @Column(name = "total_chunks")
     @Builder.Default
