@@ -43,14 +43,19 @@ class WorkspaceControllerTest {
 
     @BeforeEach
     void setUp() {
+        jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY FALSE");
         jdbcTemplate.execute("DELETE FROM refresh_tokens");
         jdbcTemplate.execute("DELETE FROM user_profiles");
         jdbcTemplate.execute("DELETE FROM user_roles");
+        jdbcTemplate.execute("DELETE FROM chat_messages");
+        jdbcTemplate.execute("DELETE FROM chat_sessions");
+        jdbcTemplate.execute("DELETE FROM search_histories");
         jdbcTemplate.execute("DELETE FROM vector_embeddings");
         jdbcTemplate.execute("DELETE FROM document_chunks");
         jdbcTemplate.execute("DELETE FROM documents");
         jdbcTemplate.execute("DELETE FROM workspaces");
         jdbcTemplate.execute("DELETE FROM users");
+        jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY TRUE");
         
         com.lumora.model.User testUser = com.lumora.model.User.builder()
                 .username("testuser")
