@@ -38,11 +38,18 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     void setUp() {
-        refreshTokenRepository.deleteAll();
-        userProfileRepository.deleteAll();
-        userRepository.deleteAll();
+        jdbcTemplate.execute("DELETE FROM refresh_tokens");
+        jdbcTemplate.execute("DELETE FROM user_profiles");
+        jdbcTemplate.execute("DELETE FROM user_roles");
+        jdbcTemplate.execute("DELETE FROM document_chunks");
+        jdbcTemplate.execute("DELETE FROM documents");
+        jdbcTemplate.execute("DELETE FROM workspaces");
+        jdbcTemplate.execute("DELETE FROM users");
     }
 
     @Test

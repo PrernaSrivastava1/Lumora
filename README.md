@@ -125,21 +125,45 @@ npm run dev
 
 ---
 
-## Application Screen Layouts (Placeholders)
+## Authentication & User Session Flow
 
-Below are placeholders for the visual dashboards once running:
-- **`[Dashboard Screenshot]`**: Main statistics on indices, vector count, and health.
-- **`[Workspace Manager]`**: Create, edit, and destroy data partition workspaces.
-- **`[Document Processor]`**: Upload text files and track background chunking state.
-- **`[Semantic Search Console]`**: Configure top-K parameters, distance metrics, and swap algorithms.
+Lumora uses a production-ready JWT stateless authentication flow with sliding-window token renewals:
+- **Registration**: `/api/v1/auth/register` creates a user account and hashes the password using `BCryptPasswordEncoder`.
+- **Log In**: `/api/v1/auth/login` checks credentials and issues a short-lived Access Token (JWT) alongside a UUID Refresh Token stored in the database.
+- **Access Control**: Reusable React Context (`AuthContext.tsx`) and React Router guards (`ProtectedRoute.tsx`) redirect unauthorized users to the `/login` page.
+- **Silent Refresh**: Axios interceptors intercept `401 Unauthorized` responses and exchange the active Refresh Token for a new Access Token automatically.
+- **Log Out**: `/api/v1/auth/logout` terminates the session and deletes the active Refresh Token from the database.
 
 ---
 
 ## API Quick Reference
 
-### 1. Create Workspace
+### 1. User Registration
 - **Method**: `POST`
-- **Endpoint**: `/workspaces`
+- **Endpoint**: `/api/v1/auth/register`
+- **Payload**:
+  ```json
+  {
+    "username": "developer",
+    "email": "dev@lumora.ai",
+    "password": "securepassword"
+  }
+  ```
+
+### 2. User Login
+- **Method**: `POST`
+- **Endpoint**: `/api/v1/auth/login`
+- **Payload**:
+  ```json
+  {
+    "username": "developer",
+    "password": "securepassword"
+  }
+  ```
+
+### 3. Create Workspace
+- **Method**: `POST`
+- **Endpoint**: `/api/v1/workspaces`
 - **Payload**:
   ```json
   {
@@ -148,14 +172,14 @@ Below are placeholders for the visual dashboards once running:
   }
   ```
 
-### 2. Upload Document
+### 4. Upload Document
 - **Method**: `POST`
-- **Endpoint**: `/documents/upload`
+- **Endpoint**: `/api/v1/documents/upload`
 - **Payload**: `multipart/form-data` with files and `workspaceId` fields.
 
-### 3. Execute Vector Search
+### 5. Execute Vector Search
 - **Method**: `POST`
-- **Endpoint**: `/search`
+- **Endpoint**: `/api/v1/search`
 - **Payload**:
   ```json
   {

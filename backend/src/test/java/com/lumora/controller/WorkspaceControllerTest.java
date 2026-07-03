@@ -38,19 +38,26 @@ class WorkspaceControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     void setUp() {
-        workspaceRepository.deleteAll();
+        jdbcTemplate.execute("DELETE FROM refresh_tokens");
+        jdbcTemplate.execute("DELETE FROM user_profiles");
+        jdbcTemplate.execute("DELETE FROM user_roles");
+        jdbcTemplate.execute("DELETE FROM document_chunks");
+        jdbcTemplate.execute("DELETE FROM documents");
+        jdbcTemplate.execute("DELETE FROM workspaces");
+        jdbcTemplate.execute("DELETE FROM users");
         
-        if (!userRepository.existsByUsername("testuser")) {
-            com.lumora.model.User testUser = com.lumora.model.User.builder()
-                    .username("testuser")
-                    .email("testuser@example.com")
-                    .password("password")
-                    .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
-                    .build();
-            userRepository.save(testUser);
-        }
+        com.lumora.model.User testUser = com.lumora.model.User.builder()
+                .username("testuser")
+                .email("testuser@example.com")
+                .password("password")
+                .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
+                .build();
+        userRepository.saveAndFlush(testUser);
     }
 
     @Test

@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@org.springframework.security.test.context.support.WithMockUser(username = "testuser")
 class SearchAnalyticsAndBenchmarkTest {
 
     @Autowired
@@ -39,10 +40,31 @@ class SearchAnalyticsAndBenchmarkTest {
     @Autowired
     private VectorStore vectorStore;
 
+    @Autowired
+    private com.lumora.repository.UserRepository userRepository;
+
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     void setUp() {
         analyticsService.clearHistory();
         vectorStore.clear();
+        jdbcTemplate.execute("DELETE FROM refresh_tokens");
+        jdbcTemplate.execute("DELETE FROM user_profiles");
+        jdbcTemplate.execute("DELETE FROM user_roles");
+        jdbcTemplate.execute("DELETE FROM document_chunks");
+        jdbcTemplate.execute("DELETE FROM documents");
+        jdbcTemplate.execute("DELETE FROM workspaces");
+        jdbcTemplate.execute("DELETE FROM users");
+
+        com.lumora.model.User testUser = com.lumora.model.User.builder()
+                .username("testuser")
+                .email("testuser@example.com")
+                .password("password")
+                .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
+                .build();
+        userRepository.saveAndFlush(testUser);
     }
 
     @Test

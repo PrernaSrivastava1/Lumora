@@ -56,20 +56,27 @@ class SearchControllerTest {
     private Workspace workspace;
     private DocumentChunk chunk;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     void setUp() {
         vectorStore.getIndexManager().clearAll();
+        jdbcTemplate.execute("DELETE FROM refresh_tokens");
+        jdbcTemplate.execute("DELETE FROM user_profiles");
+        jdbcTemplate.execute("DELETE FROM user_roles");
+        jdbcTemplate.execute("DELETE FROM document_chunks");
+        jdbcTemplate.execute("DELETE FROM documents");
+        jdbcTemplate.execute("DELETE FROM workspaces");
+        jdbcTemplate.execute("DELETE FROM users");
 
-        com.lumora.model.User testUser = userRepository.findByUsername("testuser").orElse(null);
-        if (testUser == null) {
-            testUser = com.lumora.model.User.builder()
-                    .username("testuser")
-                    .email("testuser@example.com")
-                    .password("password")
-                    .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
-                    .build();
-            testUser = userRepository.save(testUser);
-        }
+        com.lumora.model.User testUser = com.lumora.model.User.builder()
+                .username("testuser")
+                .email("testuser@example.com")
+                .password("password")
+                .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
+                .build();
+        testUser = userRepository.saveAndFlush(testUser);
 
         workspace = Workspace.builder()
                 .name("Search Test Workspace")

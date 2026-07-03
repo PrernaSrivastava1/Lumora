@@ -44,21 +44,26 @@ class DocumentControllerTest {
 
     private Workspace testWorkspace;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     void setUp() {
-        documentRepository.deleteAll();
-        workspaceRepository.deleteAll();
+        jdbcTemplate.execute("DELETE FROM refresh_tokens");
+        jdbcTemplate.execute("DELETE FROM user_profiles");
+        jdbcTemplate.execute("DELETE FROM user_roles");
+        jdbcTemplate.execute("DELETE FROM document_chunks");
+        jdbcTemplate.execute("DELETE FROM documents");
+        jdbcTemplate.execute("DELETE FROM workspaces");
+        jdbcTemplate.execute("DELETE FROM users");
 
-        com.lumora.model.User testUser = userRepository.findByUsername("testuser").orElse(null);
-        if (testUser == null) {
-            testUser = com.lumora.model.User.builder()
-                    .username("testuser")
-                    .email("testuser@example.com")
-                    .password("password")
-                    .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
-                    .build();
-            testUser = userRepository.save(testUser);
-        }
+        com.lumora.model.User testUser = com.lumora.model.User.builder()
+                .username("testuser")
+                .email("testuser@example.com")
+                .password("password")
+                .roles(java.util.Set.of(com.lumora.model.Role.ROLE_USER))
+                .build();
+        testUser = userRepository.saveAndFlush(testUser);
 
         com.lumora.dto.WorkspaceResponseDto dto = workspaceService.createWorkspace(WorkspaceDto.builder()
                 .name("Demo Space")

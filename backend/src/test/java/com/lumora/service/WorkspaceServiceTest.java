@@ -58,7 +58,7 @@ class WorkspaceServiceTest {
         org.springframework.security.core.Authentication auth = mock(org.springframework.security.core.Authentication.class);
         org.springframework.security.core.userdetails.UserDetails userDetails = 
             new org.springframework.security.core.userdetails.User("testuser", "password", java.util.Collections.emptyList());
-        when(auth.getPrincipal()).thenReturn(userDetails);
+        lenient().when(auth.getPrincipal()).thenReturn(userDetails);
         org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(auth);
 
         // Stub user repository
