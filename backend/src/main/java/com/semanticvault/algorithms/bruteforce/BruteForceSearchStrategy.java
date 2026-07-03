@@ -50,7 +50,7 @@ public class BruteForceSearchStrategy extends AbstractSearchStrategy {
 
         Vector queryVector = new Vector(null, queryVals, null);
 
-        List<Vector> allVectors = vectorStore.findAll();
+        List<Vector> allVectors = vectorStore.findAll(request.getWorkspaceId());
         if (allVectors.isEmpty()) {
             return List.of();
         }
