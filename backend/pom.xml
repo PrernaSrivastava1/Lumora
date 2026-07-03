@@ -11,10 +11,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.semanticvault</groupId>
-    <artifactId>semantic-vault</artifactId>
+    <groupId>com.Lumora</groupId>
+    <artifactId>lumora</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>semantic-vault</name>
+    <name>lumora</name>
     <description>Vector Database and RAG Engine in Java</description>
 
     <properties>

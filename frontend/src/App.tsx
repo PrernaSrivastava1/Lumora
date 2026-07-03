@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="semanticvault-theme">
+    <ThemeProvider defaultTheme="system" storageKey="Lumora-theme">
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>

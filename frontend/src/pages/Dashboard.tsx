@@ -15,7 +15,7 @@ export default function Dashboard() {
       {/* Welcome Card */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Welcome to SemanticVault AI</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Welcome to Lumora AI</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Build, benchmark, and search your custom high-dimensional vector databases locally.
           </p>
