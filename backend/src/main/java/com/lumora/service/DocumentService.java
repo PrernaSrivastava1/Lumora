@@ -29,6 +29,7 @@ public class DocumentService {
     private final WorkspaceRepository workspaceRepository;
     private final ProcessingService processingService;
     private final ChunkingService chunkingService;
+    private final DocumentProcessingPipeline documentProcessingPipeline;
     private final Path uploadPath;
 
     private static final Set<String> SUPPORTED_EXTENSIONS = Set.of("pdf", "docx", "txt", "md");
@@ -36,11 +37,13 @@ public class DocumentService {
     public DocumentService(DocumentRepository documentRepository,
                            WorkspaceRepository workspaceRepository,
                            ProcessingService processingService,
-                           ChunkingService chunkingService) {
+                           ChunkingService chunkingService,
+                           DocumentProcessingPipeline documentProcessingPipeline) {
         this.documentRepository = documentRepository;
         this.workspaceRepository = workspaceRepository;
         this.processingService = processingService;
         this.chunkingService = chunkingService;
+        this.documentProcessingPipeline = documentProcessingPipeline;
         this.uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
         try {
             Files.createDirectories(uploadPath);
@@ -95,7 +98,7 @@ public class DocumentService {
                 .fileType(extension.toUpperCase())
                 .size(file.getSize())
                 .uploadTime(LocalDateTime.now())
-                .processingStatus(ProcessingStatus.READY)
+                .processingStatus(ProcessingStatus.UPLOADING)
                 .totalChunks(0)
                 .build();
 
@@ -103,13 +106,11 @@ public class DocumentService {
 
         try {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            // Process document (extract text and metadata)
-            com.lumora.document.ParsedDocument parsed = processingService.processDocument(targetLocation, extension.toUpperCase());
-            // Perform text chunking (in-memory chunking service for now)
-            var chunks = chunkingService.chunkAndStore(savedDoc.getId(), parsed.getText(), null);
-            savedDoc.setTotalChunks(chunks.size());
-            documentRepository.save(savedDoc);
+            // Trigger asynchronous processing pipeline
+            documentProcessingPipeline.processAsynchronously(savedDoc.getId(), targetLocation, extension.toUpperCase());
         } catch (IOException e) {
+            savedDoc.setProcessingStatus(ProcessingStatus.FAILED);
+            documentRepository.save(savedDoc);
             throw new RuntimeException("Failed to store or process file", e);
         }
 

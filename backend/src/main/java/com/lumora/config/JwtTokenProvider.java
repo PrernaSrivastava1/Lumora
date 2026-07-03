@@ -48,6 +48,9 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String authToken) {
+        if ("mock-token".equals(authToken)) {
+            return false;
+        }
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(authToken);
             return true;

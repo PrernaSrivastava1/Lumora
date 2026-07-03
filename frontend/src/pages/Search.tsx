@@ -266,13 +266,31 @@ export default function Search() {
                         Chunk ID: <span className="text-foreground font-mono">{hit.chunkId}</span>
                       </span>
                       <span className="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded">
-                        Score: {hit.score.toFixed(6)}
+                        Confidence: {(hit.score * 100).toFixed(1)}% (score: {hit.score.toFixed(4)})
                       </span>
                     </div>
                   </div>
 
                   <p className="text-sm text-foreground/90 leading-relaxed font-sans pl-1 border-l-2 border-border group-hover:border-violet-500/40 transition-colors">
-                    {hit.matchedText || <span className="text-muted-foreground italic">No text content loaded for this vector chunk</span>}
+                    {(() => {
+                      if (!hit.matchedText) {
+                        return <span className="text-muted-foreground italic">No text content loaded for this vector chunk</span>;
+                      }
+                      // Simple text highlighting of query words
+                      const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                      if (words.length === 0) return hit.matchedText;
+                      const pattern = new RegExp(`(${words.map(w => w.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|')})`, 'gi');
+                      const parts = hit.matchedText.split(pattern);
+                      return parts.map((part, i) => 
+                        pattern.test(part) ? (
+                          <mark key={i} className="bg-yellow-500/30 text-foreground font-semibold px-0.5 rounded">
+                            {part}
+                          </mark>
+                        ) : (
+                          part
+                        )
+                      );
+                    })()}
                   </p>
 
                   <div className="flex justify-between items-center text-2xs text-muted-foreground">

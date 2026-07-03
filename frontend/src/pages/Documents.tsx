@@ -289,10 +289,59 @@ export default function Documents() {
                         </td>
                         <td className="px-4 py-3 font-mono text-xs">{doc.totalChunks} chunks</td>
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-500 border border-green-500/20">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Ready
-                          </span>
+                          {(() => {
+                            switch (doc.processingStatus) {
+                              case 'READY':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-semibold text-green-500 border border-green-500/20">
+                                    <CheckCircle2 className="h-3.5 w-3.5" />
+                                    Ready
+                                  </span>
+                                )
+                              case 'FAILED':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-500 border border-red-500/20">
+                                    <AlertCircle className="h-3.5 w-3.5" />
+                                    Failed
+                                  </span>
+                                )
+                              case 'UPLOADING':
+                              case 'PROCESSING':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Processing
+                                  </span>
+                                )
+                              case 'CHUNKING':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-400 border border-indigo-500/20">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Chunking
+                                  </span>
+                                )
+                              case 'EMBEDDING':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-xs font-semibold text-cyan-400 border border-cyan-500/20">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Embedding
+                                  </span>
+                                )
+                              case 'INDEXING':
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-fuchsia-500/10 px-2.5 py-0.5 text-xs font-semibold text-fuchsia-400 border border-fuchsia-500/20">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Indexing
+                                  </span>
+                                )
+                              default:
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
+                                    {doc.processingStatus}
+                                  </span>
+                                )
+                            }
+                          })()}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-1.5">

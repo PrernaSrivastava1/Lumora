@@ -6,6 +6,9 @@ package com.lumora.model;
 public enum ProcessingStatus {
     UPLOADING,
     PROCESSING,
+    CHUNKING,
+    EMBEDDING,
+    INDEXING,
     READY,
     FAILED
 }

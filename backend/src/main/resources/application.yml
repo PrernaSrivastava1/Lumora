@@ -48,6 +48,6 @@ ollama:
 
 Lumora:
   embedding:
-    active-provider: MOCK
+    active-provider: OLLAMA
   chunking:
     default-strategy: FIXED_SIZE

@@ -22,7 +22,7 @@ export interface Document {
   fileType: string
   size: number
   uploadTime: string
-  processingStatus: 'READY' | 'UPLOADING' | 'PROCESSING' | 'FAILED'
+  processingStatus: 'READY' | 'UPLOADING' | 'PROCESSING' | 'FAILED' | 'CHUNKING' | 'EMBEDDING' | 'INDEXING'
   totalChunks: number
 }
 

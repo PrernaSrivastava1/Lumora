@@ -76,6 +76,8 @@ public class RagService {
         // 3. Invoke local Ollama generator
         String modelName = request.getLlmModel() != null ? request.getLlmModel() : defaultLlmModel;
         String answer;
+        Integer promptTokens = null;
+        Integer answerTokens = null;
         try {
             String endpoint = ollamaBaseUrl + "/api/generate";
             Map<String, Object> payload = Map.of(
@@ -87,6 +89,12 @@ public class RagService {
             Map<?, ?> response = restTemplate.postForObject(endpoint, payload, Map.class);
             if (response != null && response.containsKey("response")) {
                 answer = (String) response.get("response");
+                if (response.containsKey("prompt_eval_count")) {
+                    promptTokens = ((Number) response.get("prompt_eval_count")).intValue();
+                }
+                if (response.containsKey("eval_count")) {
+                    answerTokens = ((Number) response.get("eval_count")).intValue();
+                }
             } else {
                 answer = "Error: Received empty response from local Ollama generation service.";
             }
@@ -104,6 +112,10 @@ public class RagService {
                 .sources(sources)
                 .algorithmUsed(searchResponse.getAlgorithm() != null ? searchResponse.getAlgorithm().name() : "AUTO")
                 .responseTimeMs(endTime - startTime)
+                .promptTokens(promptTokens)
+                .answerTokens(answerTokens)
+                .contextSizeChars(prompt.length())
+                .finalPromptSent(prompt)
                 .build();
     }
 }

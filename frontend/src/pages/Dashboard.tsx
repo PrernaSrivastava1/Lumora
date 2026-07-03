@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Activity,
   FolderPlus,
@@ -5,11 +7,56 @@ import {
   Search,
   CheckCircle,
   Database,
-  Cpu,
-  History,
+  Cpu
 } from 'lucide-react'
+import apiClient from '@/services/api'
+
+interface Workspace {
+  id: number
+  totalDocuments: number
+  totalVectors: number
+}
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    workspaceCount: 0,
+    documentCount: 0,
+    vectorCount: 0
+  })
+  const [ollamaOnline, setOllamaOnline] = useState<boolean | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // 1. Fetch workspaces to sum actual metrics
+        const wsRes = await apiClient.get('/workspaces')
+        const list: Workspace[] = wsRes.data.data || wsRes.data || []
+        
+        const docCount = list.reduce((acc, ws) => acc + (ws.totalDocuments || 0), 0)
+        const vecCount = list.reduce((acc, ws) => acc + (ws.totalVectors || 0), 0)
+        
+        setStats({
+          workspaceCount: list.length,
+          documentCount: docCount,
+          vectorCount: vecCount
+        })
+
+        // 2. Fetch Ollama health status
+        const healthRes = await apiClient.get('/health/ollama')
+        const healthy = healthRes.data?.data?.healthy ?? false
+        setOllamaOnline(healthy)
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err)
+        setOllamaOnline(false)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDashboardData()
+  }, [])
+
   return (
     <div className="p-6 space-y-6">
       {/* Welcome Card */}
@@ -28,7 +75,10 @@ export default function Dashboard() {
 
       {/* Quick Action Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm flex items-center gap-4 hover:border-foreground/20 transition-all cursor-not-allowed">
+        <Link
+          to="/workspaces"
+          className="rounded-xl border border-border bg-card p-4 shadow-sm flex items-center gap-4 hover:border-violet-500/30 hover:bg-violet-500/[0.02] transition-all cursor-pointer"
+        >
           <div className="rounded-lg p-2.5 bg-primary/10 text-primary">
             <FolderPlus className="h-5 w-5" />
           </div>
@@ -36,9 +86,12 @@ export default function Dashboard() {
             <div className="text-sm font-semibold">New Workspace</div>
             <div className="text-xs text-muted-foreground">Setup knowledge collection</div>
           </div>
-        </div>
+        </Link>
 
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm flex items-center gap-4 hover:border-foreground/20 transition-all cursor-not-allowed">
+        <Link
+          to="/documents"
+          className="rounded-xl border border-border bg-card p-4 shadow-sm flex items-center gap-4 hover:border-violet-500/30 hover:bg-violet-500/[0.02] transition-all cursor-pointer"
+        >
           <div className="rounded-lg p-2.5 bg-primary/10 text-primary">
             <FileUp className="h-5 w-5" />
           </div>
@@ -46,9 +99,12 @@ export default function Dashboard() {
             <div className="text-sm font-semibold">Upload Document</div>
             <div className="text-xs text-muted-foreground">Extract & embed text</div>
           </div>
-        </div>
+        </Link>
 
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm flex items-center gap-4 hover:border-foreground/20 transition-all cursor-not-allowed">
+        <Link
+          to="/search"
+          className="rounded-xl border border-border bg-card p-4 shadow-sm flex items-center gap-4 hover:border-violet-500/30 hover:bg-violet-500/[0.02] transition-all cursor-pointer"
+        >
           <div className="rounded-lg p-2.5 bg-primary/10 text-primary">
             <Search className="h-5 w-5" />
           </div>
@@ -56,9 +112,12 @@ export default function Dashboard() {
             <div className="text-sm font-semibold">Vector Queries</div>
             <div className="text-xs text-muted-foreground">Test similarity models</div>
           </div>
-        </div>
+        </Link>
 
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm flex items-center gap-4 hover:border-foreground/20 transition-all cursor-not-allowed">
+        <Link
+          to="/benchmark"
+          className="rounded-xl border border-border bg-card p-4 shadow-sm flex items-center gap-4 hover:border-violet-500/30 hover:bg-violet-500/[0.02] transition-all cursor-pointer"
+        >
           <div className="rounded-lg p-2.5 bg-primary/10 text-primary">
             <Cpu className="h-5 w-5" />
           </div>
@@ -66,55 +125,55 @@ export default function Dashboard() {
             <div className="text-sm font-semibold">Benchmark Suite</div>
             <div className="text-xs text-muted-foreground">Compare algorithm runs</div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* System Status Cards */}
       <div className="grid gap-6 md:grid-cols-3">
+        {/* Workspaces Volume */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-sm font-medium">Index Volume</span>
+            <span className="text-sm font-medium">Workspaces Volume</span>
             <Database className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-3xl font-extrabold">20</div>
-            <div className="text-xs text-muted-foreground mt-1">Pre-loaded 16D semantic vectors</div>
+            <div className="text-3xl font-extrabold">{isLoading ? '--' : stats.workspaceCount}</div>
+            <div className="text-xs text-muted-foreground mt-1">Total active isolated knowledge domains</div>
           </div>
         </div>
 
+        {/* Index Volume */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-sm font-medium">Recent Queries</span>
+            <span className="text-sm font-medium">Index Volume</span>
             <Activity className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-3xl font-extrabold">--</div>
-            <div className="text-xs text-muted-foreground mt-1">Total query logs this session</div>
+            <div className="text-3xl font-extrabold">
+              {isLoading ? '--' : `${stats.documentCount} / ${stats.vectorCount}`}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">Total documents / indexed vectors</div>
           </div>
         </div>
 
+        {/* Ollama Status */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-sm font-medium">Ollama Server Connection</span>
             <Cpu className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-3xl font-extrabold text-muted-foreground">Offline</div>
-            <div className="text-xs text-muted-foreground mt-1">Check local ollama serve status</div>
+            {ollamaOnline === null ? (
+              <div className="text-3xl font-extrabold text-muted-foreground">Checking...</div>
+            ) : ollamaOnline ? (
+              <div className="text-3xl font-extrabold text-green-500">Online</div>
+            ) : (
+              <div className="text-3xl font-extrabold text-red-400">Offline</div>
+            )}
+            <div className="text-xs text-muted-foreground mt-1">
+              {ollamaOnline ? 'Embedding model fully operational' : 'Check local ollama serve status'}
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Recent Activity Placeholder */}
-      <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-            <History className="h-5 w-5 text-muted-foreground" />
-            Recent Activity
-          </h2>
-        </div>
-        <div className="border border-dashed border-border rounded-lg p-8 text-center text-sm text-muted-foreground">
-          No recent document uploads or search queries logged in this workspace yet.
         </div>
       </div>
     </div>

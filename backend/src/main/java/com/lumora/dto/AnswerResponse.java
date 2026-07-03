@@ -13,4 +13,8 @@ public class AnswerResponse {
     private List<SourceReference> sources;
     private String algorithmUsed;
     private long responseTimeMs;
+    private Integer promptTokens;
+    private Integer answerTokens;
+    private Integer contextSizeChars;
+    private String finalPromptSent;
 }

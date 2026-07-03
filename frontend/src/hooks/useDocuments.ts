@@ -6,6 +6,14 @@ export function useDocuments(workspaceId: number) {
     queryKey: ['documents', workspaceId],
     queryFn: () => documentService.getDocuments(workspaceId).then((res) => res.data),
     enabled: !!workspaceId,
+    refetchInterval: (query) => {
+      const data = query.state.data as any
+      const docs = data?.data || data
+      if (Array.isArray(docs) && docs.some((doc: any) => !['READY', 'FAILED'].includes(doc.processingStatus))) {
+        return 2000
+      }
+      return false
+    }
   })
 }
 
