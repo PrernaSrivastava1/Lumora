@@ -14,4 +14,6 @@ public interface ChunkRepository extends JpaRepository<DocumentChunk, Long> {
     void deleteByDocumentId(Long documentId);
 
     long countByDocumentId(Long documentId);
+
+    List<DocumentChunk> findByDocumentWorkspaceId(Long workspaceId);
 }

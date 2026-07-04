@@ -11,7 +11,13 @@ import {
   ChevronDown,
   ChevronUp,
   Terminal,
-  StopCircle
+  StopCircle,
+  Activity,
+  Layers,
+  Clock,
+  Cpu,
+  CheckCircle2,
+  Database
 } from 'lucide-react'
 import apiClient from '@/services/api'
 
@@ -31,7 +37,9 @@ interface Message {
   promptTokens?: number
   answerTokens?: number
   contextSizeChars?: number
-  finalPromptSent?: String
+  finalPromptSent?: string
+  embeddingDimension?: number
+  totalVectorsSearched?: number
 }
 
 interface Workspace {
@@ -45,12 +53,13 @@ export default function AIChat() {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | ''>('')
   const [algorithm, setAlgorithm] = useState<string>('AUTO')
   const [topK, setTopK] = useState<number>(5)
+  const [ollamaOnline, setOllamaOnline] = useState<boolean | null>(null)
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Hello! I am your local Lumora RAG assistant. Select a workspace from the dropdown above to start asking questions about your indexed documents.',
+      content: 'Hello! I am your Lumora AI assistant. Select a workspace above to query your private documents locally and generate responses.',
     },
   ])
   const [inputMsg, setInputMsg] = useState('')
@@ -63,10 +72,23 @@ export default function AIChat() {
   // Accordion state for collapsed references
   const [expandedSources, setExpandedSources] = useState<Record<string, boolean>>({})
 
+  // Accordion state for "Why this answer?" debug panels
+  const [expandedDebugs, setExpandedDebugs] = useState<Record<string, boolean>>({})
+
   // Modal prompt inspector state
   const [inspectingPrompt, setInspectingPrompt] = useState<string | null>(null)
 
-  // Load user workspaces list
+  // Animated loading step index
+  const [loadingStepIdx, setLoadingStepIdx] = useState(0)
+  const loadingSteps = [
+    'Generating query embedding...',
+    'Searching vector index...',
+    'Ranking results...',
+    'Preparing context...',
+    'Generating answer...'
+  ]
+
+  // Poll Ollama status & fetch workspaces
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
@@ -82,11 +104,43 @@ export default function AIChat() {
         console.error('Failed to load workspaces:', err)
       }
     }
+
+    const checkOllama = async () => {
+      try {
+        const res = await apiClient.get('/health/ollama')
+        const healthy = res.data?.data?.healthy ?? false
+        setOllamaOnline(healthy)
+      } catch (err) {
+        setOllamaOnline(false)
+      }
+    }
+
     fetchWorkspaces()
+    checkOllama()
+    const interval = setInterval(checkOllama, 10000)
+    return () => clearInterval(interval)
   }, [])
+
+  // Cycle loading steps when submitting
+  useEffect(() => {
+    let timer: any
+    if (isSubmitting) {
+      setLoadingStepIdx(0)
+      timer = setInterval(() => {
+        setLoadingStepIdx((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev))
+      }, 700)
+    } else {
+      setLoadingStepIdx(0)
+    }
+    return () => clearInterval(timer)
+  }, [isSubmitting])
 
   const toggleSource = (msgId: string) => {
     setExpandedSources((prev) => ({ ...prev, [msgId]: !prev[msgId] }))
+  }
+
+  const toggleDebug = (msgId: string) => {
+    setExpandedDebugs((prev) => ({ ...prev, [msgId]: !prev[msgId] }))
   }
 
   const handleSend = async (e: React.FormEvent, customPrompt?: string) => {
@@ -118,7 +172,19 @@ export default function AIChat() {
       }, { signal: controller.signal })
 
       if (res.data.success) {
-        const { answer, sources, algorithmUsed, responseTimeMs, promptTokens, answerTokens, contextSizeChars, finalPromptSent } = res.data.data
+        const { 
+          answer, 
+          sources, 
+          algorithmUsed, 
+          responseTimeMs, 
+          promptTokens, 
+          answerTokens, 
+          contextSizeChars, 
+          finalPromptSent,
+          embeddingDimension,
+          totalVectorsSearched
+        } = res.data.data
+
         const assistantMsgId = 'assistant-' + Date.now()
         
         // Simulated streaming/typing animation
@@ -136,7 +202,9 @@ export default function AIChat() {
             promptTokens,
             answerTokens,
             contextSizeChars,
-            finalPromptSent
+            finalPromptSent,
+            embeddingDimension,
+            totalVectorsSearched
           }
         ])
 
@@ -156,7 +224,7 @@ export default function AIChat() {
             clearInterval(typingInterval)
             setIsSubmitting(false)
           }
-        }, 30) // Fast natural typing flow
+        }, 20) // Fast natural typing flow
 
       } else {
         setErrorMsg(res.data.message || 'Failed to synthesize answer.')
@@ -180,7 +248,6 @@ export default function AIChat() {
   }
 
   const handleRegenerate = (msgIndex: number) => {
-    // Find the last user message before this assistant message
     for (let i = msgIndex - 1; i >= 0; i--) {
       if (messages[i].role === 'user') {
         handleSend(null as any, messages[i].content)
@@ -206,6 +273,14 @@ export default function AIChat() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8.5rem)] rounded-xl border border-border bg-card overflow-hidden">
+      {/* Offline Status Alert Banner */}
+      {ollamaOnline === false && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center gap-2 text-xs text-amber-400 font-semibold animate-in slide-in-from-top-1">
+          <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
+          <span>AI model offline. Semantic search is available, but answer generation requires Ollama.</span>
+        </div>
+      )}
+
       {/* Top Configuration Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 border-b border-border bg-muted/10">
         <div className="flex flex-wrap items-center gap-3">
@@ -215,7 +290,7 @@ export default function AIChat() {
             <select
               value={selectedWorkspaceId}
               onChange={(e) => setSelectedWorkspaceId(Number(e.target.value))}
-              className="px-2.5 py-1.5 rounded-lg border border-input bg-background text-xs focus:outline-none"
+              className="px-2.5 py-1.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary outline-none"
             >
               {workspaces.map((ws) => (
                 <option key={ws.id} value={ws.id}>
@@ -231,9 +306,11 @@ export default function AIChat() {
             <select
               value={algorithm}
               onChange={(e) => setAlgorithm(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg border border-input bg-background text-xs focus:outline-none"
+              className="px-2.5 py-1.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary outline-none"
             >
               <option value="AUTO">AUTO (Dynamic)</option>
+              <option value="HYBRID">HYBRID (Semantic + Keywords)</option>
+              <option value="KEYWORD">KEYWORD (Lexical Search)</option>
               <option value="BRUTE_FORCE">Brute Force (Exact)</option>
               <option value="KD_TREE">KD-Tree (Axes Split)</option>
               <option value="HNSW">HNSW (Graph Routing)</option>
@@ -285,16 +362,16 @@ export default function AIChat() {
                   <Sparkles className="h-4 w-4" />
                 )}
               </div>
-              <div className="space-y-3 max-w-full">
+              <div className="space-y-3 max-w-full flex-1">
                 {/* Text Bubble */}
                 <div
-                  className={`rounded-2xl p-4 border text-sm leading-relaxed whitespace-pre-wrap relative group ${
+                  className={`rounded-2xl p-4 border text-sm leading-relaxed relative group shadow-sm ${
                     msg.role === 'user'
-                      ? 'bg-muted/10 border-border text-foreground'
-                      : 'bg-card border-border text-foreground shadow-sm'
+                      ? 'bg-muted/10 border-border text-foreground ml-auto'
+                      : 'bg-card border-border text-foreground'
                   }`}
                 >
-                  {msg.content}
+                  <p className="whitespace-pre-line">{msg.content}</p>
 
                   {/* Actions & Metrics display */}
                   {msg.role === 'assistant' && msg.id !== 'welcome' && (
@@ -304,18 +381,22 @@ export default function AIChat() {
                       {msg.promptTokens !== undefined && (
                         <span>Tokens: <strong>{msg.promptTokens} in / {msg.answerTokens} out</strong></span>
                       )}
-                      {msg.contextSizeChars !== undefined && (
-                        <span>Context: <strong>{msg.contextSizeChars} chars</strong></span>
-                      )}
 
                       <div className="flex items-center gap-2 ml-auto">
+                        <button
+                          onClick={() => toggleDebug(msg.id)}
+                          className="inline-flex items-center gap-0.5 hover:text-primary transition-colors font-bold text-violet-400"
+                          title="Explainable AI reasoning"
+                        >
+                          <Info className="h-3 w-3" /> Why this answer?
+                        </button>
                         {msg.finalPromptSent && (
                           <button
                             onClick={() => setInspectingPrompt(msg.finalPromptSent as string)}
                             className="inline-flex items-center gap-0.5 hover:text-primary transition-colors"
                             title="Inspect LLM Prompt"
                           >
-                            <Terminal className="h-3 w-3" /> Inspect Prompt
+                            <Terminal className="h-3 w-3" /> Prompt
                           </button>
                         )}
                         <button
@@ -336,6 +417,39 @@ export default function AIChat() {
                     </div>
                   )}
                 </div>
+
+                {/* Explainable AI "Why this answer?" Panel */}
+                {msg.role === 'assistant' && expandedDebugs[msg.id] && (
+                  <div className="border border-border rounded-lg bg-card overflow-hidden text-xs animate-in slide-in-from-top-2 duration-200">
+                    <div className="bg-muted/30 px-3 py-2 border-b border-border font-bold text-foreground flex items-center gap-1.5">
+                      <Cpu className="h-3.5 w-3.5 text-violet-400" />
+                      Explainable AI (XAI) Debug Panel
+                    </div>
+                    <div className="p-3 space-y-2 font-mono text-[11px] text-muted-foreground leading-relaxed">
+                      <div className="grid grid-cols-2 gap-2 border-b border-border pb-2 text-foreground">
+                        <div>Search Algorithm: <strong className="text-violet-400">{msg.algorithmUsed}</strong></div>
+                        <div>Response Generation Time: <strong>{msg.responseTimeMs} ms</strong></div>
+                        <div>Query Dimension: <strong>{msg.embeddingDimension || 768}D</strong></div>
+                        <div>Total Workspace Vectors: <strong>{msg.totalVectorsSearched || 0}</strong></div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="font-bold text-foreground flex items-center gap-1">
+                          <Layers className="h-3.5 w-3.5 text-cyan-400" />
+                          Retrieved Context Chunks (Top-K)
+                        </div>
+                        {msg.sources && msg.sources.map((s, idx) => (
+                          <div key={idx} className="bg-muted/10 p-2 rounded border border-border">
+                            <div className="flex justify-between font-semibold text-foreground mb-1">
+                              <span>Source #{idx+1}: {s.documentTitle}</span>
+                              <span className="text-emerald-400">Score: {s.similarityScore.toFixed(4)} ({(s.similarityScore * 100).toFixed(1)}%)</span>
+                            </div>
+                            <p className="text-[10px] italic">"{s.textPreview.trim()}"</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Collapsible references panel */}
                 {msg.role === 'assistant' && msg.sources && msg.sources.length > 0 && (
@@ -374,20 +488,39 @@ export default function AIChat() {
             </div>
           ))}
 
+          {/* Sequential Loading Step Animation */}
           {isSubmitting && (
-            <div className="flex items-start gap-4 max-w-2xl">
+            <div className="flex items-start gap-4 max-w-2xl animate-in fade-in-50 duration-200">
               <div className="rounded-lg p-2 bg-primary/10 text-primary shrink-0">
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4 animate-pulse text-violet-400" />
               </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground bg-card border border-border p-4 rounded-2xl shadow-sm">
-                <RefreshCw className="h-4 w-4 animate-spin text-primary" />
-                <span>Thinking and retrieving chunks...</span>
-                <button
-                  onClick={handleStop}
-                  className="ml-3 inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-semibold transition-colors border border-red-500/20 px-2 py-1 rounded bg-red-500/5"
-                >
-                  <StopCircle className="h-3.5 w-3.5" /> Stop
-                </button>
+              <div className="space-y-2.5 bg-card border border-border p-4 rounded-2xl shadow-sm w-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-violet-400 flex items-center gap-1.5">
+                    <Activity className="h-3.5 w-3.5 animate-spin" />
+                    AI Reasoning Pipeline
+                  </span>
+                  <button
+                    onClick={handleStop}
+                    className="inline-flex items-center gap-1 text-[10px] text-red-400 hover:text-red-300 font-bold transition-colors border border-red-500/20 px-2 py-0.5 rounded bg-red-500/5"
+                  >
+                    <StopCircle className="h-3.5 w-3.5" /> Stop
+                  </button>
+                </div>
+                <div className="space-y-1.5 pt-1">
+                  {loadingSteps.map((step, idx) => {
+                    const isDone = idx < loadingStepIdx
+                    const isActive = idx === loadingStepIdx
+                    return (
+                      <div key={idx} className="flex items-center gap-2 text-xs transition-all duration-200">
+                        <div className={`h-2 w-2 rounded-full transition-colors duration-200 ${isDone ? 'bg-green-500' : isActive ? 'bg-violet-500 animate-pulse' : 'bg-muted'}`} />
+                        <span className={`${isDone ? 'text-green-500/80 font-medium line-through' : isActive ? 'text-foreground font-bold animate-pulse' : 'text-muted-foreground'}`}>
+                          {step}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )}

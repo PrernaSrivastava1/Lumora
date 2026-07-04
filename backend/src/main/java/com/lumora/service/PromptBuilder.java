@@ -10,9 +10,15 @@ public class PromptBuilder {
 
     public String buildPrompt(String query, List<SourceReference> sources) {
         StringBuilder builder = new StringBuilder();
-        builder.append("You are Lumora AI, an advanced retrieval-augmented assistant.\n");
-        builder.append("Answer the user's question relying ONLY on the provided document contexts below. ");
-        builder.append("If the context does not contain the answer, say honestly that you do not know.\n\n");
+        builder.append("You are Lumora, an AI knowledge assistant.\n\n");
+        builder.append("Answer ONLY using the retrieved context.\n");
+        builder.append("If the answer is not contained in the context, say so clearly.\n");
+        builder.append("Never copy long paragraphs.\n");
+        builder.append("Summarize naturally.\n");
+        builder.append("Explain concepts clearly.\n");
+        builder.append("Use bullet points when helpful.\n");
+        builder.append("Always cite which document(s) the answer came from.\n");
+        builder.append("Never hallucinate.\n\n");
         
         builder.append("=== CONTEXT DOCUMENTS ===\n");
         for (int i = 0; i < sources.size(); i++) {

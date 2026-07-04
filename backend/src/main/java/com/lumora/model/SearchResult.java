@@ -23,4 +23,8 @@ public class SearchResult {
     private String matchedText;
 
     private String explanation;
+
+    private String documentTitle;
+
+    private String sectionHeading;
 }

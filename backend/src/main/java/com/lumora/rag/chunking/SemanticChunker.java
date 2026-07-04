@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public class SemanticChunker implements ChunkingStrategy {
 
     private static final Pattern SENTENCE_PATTERN = Pattern.compile("[^.!?]+([.!?]+|$)");
+    private static final Pattern HEADING_PATTERN = Pattern.compile("^(#+\\s+.*|\\d+\\.\\s+[A-Z].*|[A-Z][a-zA-Z\\s]{3,50}:?)$");
 
     @Override
     public String getStrategyName() {
@@ -26,41 +27,76 @@ public class SemanticChunker implements ChunkingStrategy {
             return chunks;
         }
 
+        // Extract sentences
         Matcher matcher = SENTENCE_PATTERN.matcher(text);
         List<SentenceInfo> sentences = new ArrayList<>();
         while (matcher.find()) {
-            String sentence = matcher.group();
-            if (!sentence.trim().isEmpty()) {
-                sentences.add(new SentenceInfo(sentence, matcher.start(), matcher.end()));
+            String sentenceText = matcher.group();
+            if (!sentenceText.trim().isEmpty()) {
+                sentences.add(new SentenceInfo(sentenceText, matcher.start(), matcher.end()));
             }
         }
 
-        int sentencesPerChunk = 3;
+        List<SentenceInfo> currentChunkSentences = new ArrayList<>();
+        int currentWordCount = 0;
         int chunkIdx = 0;
-        for (int i = 0; i < sentences.size(); i += sentencesPerChunk) {
-            int endIdx = Math.min(i + sentencesPerChunk, sentences.size());
-            StringBuilder contentBuilder = new StringBuilder();
-            int startChar = sentences.get(i).start;
-            int endChar = sentences.get(endIdx - 1).end;
 
-            for (int j = i; j < endIdx; j++) {
-                contentBuilder.append(sentences.get(j).text);
+        for (int i = 0; i < sentences.size(); i++) {
+            SentenceInfo sentence = sentences.get(i);
+            String trimmedSentence = sentence.text.trim();
+            int sentenceWords = trimmedSentence.split("\\s+").length;
+
+            boolean isHeading = HEADING_PATTERN.matcher(trimmedSentence).matches();
+
+            // If we hit a heading and we already have some content, or if we exceed our token target (300 words)
+            if ((isHeading && !currentChunkSentences.isEmpty()) || (currentWordCount >= 300 && !currentChunkSentences.isEmpty())) {
+                // Build current chunk
+                chunks.add(createChunk(currentChunkSentences, documentId, chunkIdx++));
+
+                // Implement overlap: keep last 2 sentences from the previous chunk
+                List<SentenceInfo> overlapSentences = new ArrayList<>();
+                int overlapWords = 0;
+                for (int j = Math.max(0, currentChunkSentences.size() - 2); j < currentChunkSentences.size(); j++) {
+                    SentenceInfo os = currentChunkSentences.get(j);
+                    overlapSentences.add(os);
+                    overlapWords += os.text.trim().split("\\s+").length;
+                }
+
+                currentChunkSentences = new ArrayList<>(overlapSentences);
+                currentWordCount = overlapWords;
             }
 
-            String chunkContent = contentBuilder.toString();
-            int tokens = chunkContent.trim().isEmpty() ? 0 : chunkContent.trim().split("\\s+").length;
+            currentChunkSentences.add(sentence);
+            currentWordCount += sentenceWords;
+        }
 
-            chunks.add(DocumentChunk.builder()
-                    .document(Document.builder().id(documentId).build())
-                    .chunkIndex(chunkIdx++)
-                    .content(chunkContent)
-                    .tokenCount(tokens)
-                    .startChar(startChar)
-                    .endChar(endChar)
-                    .build());
+        if (!currentChunkSentences.isEmpty()) {
+            chunks.add(createChunk(currentChunkSentences, documentId, chunkIdx++));
         }
 
         return chunks;
+    }
+
+    private DocumentChunk createChunk(List<SentenceInfo> sentences, Long documentId, int chunkIndex) {
+        StringBuilder contentBuilder = new StringBuilder();
+        int startChar = sentences.get(0).start;
+        int endChar = sentences.get(sentences.size() - 1).end;
+
+        for (SentenceInfo s : sentences) {
+            contentBuilder.append(s.text);
+        }
+
+        String content = contentBuilder.toString();
+        int tokens = content.trim().isEmpty() ? 0 : content.trim().split("\\s+").length;
+
+        return DocumentChunk.builder()
+                .document(Document.builder().id(documentId).build())
+                .chunkIndex(chunkIndex)
+                .content(content)
+                .tokenCount(tokens)
+                .startChar(startChar)
+                .endChar(endChar)
+                .build();
     }
 
     private static class SentenceInfo {

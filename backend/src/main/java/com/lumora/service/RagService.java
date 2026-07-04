@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.lumora.repository.VectorStore;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class RagService {
     private final DocumentRepository documentRepository;
     private final PromptBuilder promptBuilder;
     private final RestTemplate restTemplate;
+    private final VectorStore vectorStore;
 
     @Value("${ollama.base-url:http://localhost:11434}")
     private String ollamaBaseUrl;
@@ -35,11 +37,13 @@ public class RagService {
     public RagService(SearchContext searchContext,
                       DocumentRepository documentRepository,
                       PromptBuilder promptBuilder,
-                      @Qualifier("ollamaRestTemplate") RestTemplate restTemplate) {
+                      @Qualifier("ollamaRestTemplate") RestTemplate restTemplate,
+                      VectorStore vectorStore) {
         this.searchContext = searchContext;
         this.documentRepository = documentRepository;
         this.promptBuilder = promptBuilder;
         this.restTemplate = restTemplate;
+        this.vectorStore = vectorStore;
     }
 
     @Transactional
@@ -118,6 +122,8 @@ public class RagService {
                 .answerTokens(answerTokens)
                 .contextSizeChars(prompt.length())
                 .finalPromptSent(prompt)
+                .embeddingDimension(searchResponse.getEmbeddingDimension())
+                .totalVectorsSearched(vectorStore.count(request.getWorkspaceId()))
                 .build();
     }
 }

@@ -30,6 +30,7 @@ public class OllamaHealthController {
         data.put("provider", "Ollama Server");
         data.put("model", modelName);
         data.put("status", healthy ? "UP" : "DOWN");
+        data.put("healthy", healthy);
 
         if (healthy) {
             return ApiResponse.success("Ollama is reachable", data);

@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useWorkspaces } from '@/hooks/useWorkspaces'
 import { searchService } from '@/services/searchService'
 import type { SearchResponse } from '@/types'
+import apiClient from '@/services/api'
 import {
   Search as SearchIcon,
   Sliders,
@@ -13,11 +15,15 @@ import {
   Clock,
   Layers,
   Database,
+  ExternalLink,
+  BookOpen,
+  CheckCircle
 } from 'lucide-react'
 
 export default function Search() {
   const { data: workspaces, isLoading: isWorkspacesLoading } = useWorkspaces()
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number>(0)
+  const [ollamaOnline, setOllamaOnline] = useState<boolean | null>(null)
 
   // Auto-select first workspace when loaded
   if (workspaces && workspaces.length > 0 && selectedWorkspaceId === 0) {
@@ -26,7 +32,7 @@ export default function Search() {
 
   // Search parameters
   const [query, setQuery] = useState('')
-  const [algorithm, setAlgorithm] = useState<'AUTO' | 'BRUTE_FORCE' | 'HNSW' | 'KD_TREE' | 'HYBRID'>('AUTO')
+  const [algorithm, setAlgorithm] = useState<'AUTO' | 'BRUTE_FORCE' | 'HNSW' | 'KD_TREE' | 'HYBRID' | 'KEYWORD'>('AUTO')
   const [metric, setMetric] = useState<'COSINE' | 'EUCLIDEAN' | 'MANHATTAN'>('COSINE')
   const [topK, setTopK] = useState(5)
 
@@ -34,6 +40,22 @@ export default function Search() {
   const [isSearching, setIsSearching] = useState(false)
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
+
+  // Poll Ollama status
+  useEffect(() => {
+    const checkOllama = async () => {
+      try {
+        const res = await apiClient.get('/health/ollama')
+        const healthy = res.data?.data?.healthy ?? false
+        setOllamaOnline(healthy)
+      } catch (err) {
+        setOllamaOnline(false)
+      }
+    }
+    checkOllama()
+    const interval = setInterval(checkOllama, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,15 +84,49 @@ export default function Search() {
     }
   }
 
+  // Find document title based on ID or fallback
+  const getDocName = (hit: any) => {
+    if (hit.documentTitle) return hit.documentTitle;
+    if (hit.explanation && hit.explanation.includes("(Doc: ")) {
+      const parts = hit.explanation.split("(Doc: ");
+      if (parts.length > 1) {
+        return parts[1].replace(")", "");
+      }
+    }
+    return 'Document ID: ' + hit.documentId;
+  }
+
+  // Extract first heading or short sentence
+  const getSectionHeading = (hit: any) => {
+    if (hit.sectionHeading) return hit.sectionHeading;
+    if (!hit.matchedText) return 'General Section';
+    const lines = hit.matchedText.split('\n');
+    for (let line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.length > 2 && trimmed.length < 60 && !trimmed.endsWith('.')) {
+        return trimmed;
+      }
+    }
+    return 'Context Paragraph';
+  }
+
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
+      {/* Offline Status Alert Banner */}
+      {ollamaOnline === false && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex items-center gap-2.5 text-xs text-amber-400 font-semibold animate-in slide-in-from-top-1">
+          <AlertCircle className="h-4.5 w-4.5 shrink-0 text-amber-400" />
+          <span>AI model offline. Semantic search is available, but answer generation requires Ollama.</span>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
-            Semantic Search Engine
+            Hybrid Search Engine
           </h1>
           <p className="text-muted-foreground mt-1">
-            Query your vector index directly using various mathematical models and compare score outputs.
+            Query your vector index directly using various mathematical models, keyword rankings, or hybrid combinations.
           </p>
         </div>
 
@@ -112,7 +168,7 @@ export default function Search() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type search terms (e.g. 'sushi', 'binary tree') or raw dimensions (e.g. '0.9, 0.8, 0.7')"
+            placeholder="Type search terms (e.g. 'Natural Language Processing', 'Resume') or query vectors"
             className="w-full pl-11 pr-28 py-3 rounded-lg border border-input bg-muted/10 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-muted-foreground/60"
           />
           <button
@@ -135,15 +191,16 @@ export default function Search() {
           <div className="space-y-2">
             <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
               <Sliders className="h-3.5 w-3.5 text-indigo-400" />
-              Search Algorithm
+              Search Mode
             </span>
             <div className="flex flex-wrap gap-2">
               {[
-                { name: 'Auto (Smart)', val: 'AUTO' },
-                { name: 'Brute Force', val: 'BRUTE_FORCE' },
-                { name: 'HNSW', val: 'HNSW' },
-                { name: 'KD-Tree', val: 'KD_TREE' },
+                { name: 'Semantic (Auto)', val: 'AUTO' },
                 { name: 'Hybrid', val: 'HYBRID' },
+                { name: 'Keyword', val: 'KEYWORD' },
+                { name: 'HNSW Graph', val: 'HNSW' },
+                { name: 'KD-Tree', val: 'KD_TREE' },
+                { name: 'Brute Force', val: 'BRUTE_FORCE' },
               ].map((algo) => (
                 <button
                   type="button"
@@ -177,7 +234,8 @@ export default function Search() {
                   type="button"
                   key={m.val}
                   onClick={() => setMetric(m.val as any)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  disabled={algorithm === 'KEYWORD'}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all disabled:opacity-30 disabled:pointer-events-none ${
                     metric === m.val
                       ? 'border-fuchsia-500 bg-fuchsia-500/10 text-fuchsia-300'
                       : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -252,52 +310,78 @@ export default function Search() {
         {searchResponse ? (
           searchResponse.results.length > 0 ? (
             <div className="space-y-4">
-              {searchResponse.results.map((hit, index) => (
-                <div
-                  key={hit.chunkId}
-                  className="rounded-lg border border-border bg-muted/5 p-4 space-y-3 hover:border-violet-500/20 hover:bg-violet-500/5 transition-all group animate-in slide-in-from-top-2 duration-200"
-                >
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-violet-400 bg-violet-500/10 px-2 py-1 rounded">
-                      Rank #{index + 1}
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-muted-foreground">
-                        Chunk ID: <span className="text-foreground font-mono">{hit.chunkId}</span>
-                      </span>
-                      <span className="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded">
-                        Confidence: {(hit.score * 100).toFixed(1)}% (score: {hit.score.toFixed(4)})
-                      </span>
+              {searchResponse.results.map((hit, index) => {
+                const docTitle = getDocName(hit)
+                const secHeading = getSectionHeading(hit)
+                // Confidence display: semantic uses distance where lower is closer, keyword uses score where higher is better
+                const confidencePercent = algorithm === 'KEYWORD'
+                  ? Math.min(100, hit.score * 10).toFixed(1)
+                  : ((1.0 - Math.min(1.0, hit.score)) * 100).toFixed(1)
+
+                return (
+                  <div
+                    key={hit.chunkId}
+                    className="rounded-lg border border-border bg-muted/5 p-4 space-y-3 hover:border-violet-500/20 hover:bg-violet-500/5 transition-all group animate-in slide-in-from-top-2 duration-200"
+                  >
+                    <div className="flex flex-wrap justify-between items-center gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-violet-400 bg-violet-500/10 px-2 py-1 rounded">
+                          Rank #{index + 1}
+                        </span>
+                        <span className="font-bold text-foreground flex items-center gap-1">
+                          <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
+                          {docTitle}
+                        </span>
+                        <span className="text-muted-foreground font-semibold">
+                          / {secHeading}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-muted-foreground">
+                          Chunk ID: <span className="text-foreground font-mono">{hit.chunkId}</span>
+                        </span>
+                        <span className="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded">
+                          Confidence: {confidencePercent}% (score: {hit.score.toFixed(4)})
+                        </span>
+                        {hit.documentId && (
+                          <Link
+                            to={`/documents`}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-400 hover:text-violet-300 transition-colors"
+                          >
+                            Open <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-foreground/90 leading-relaxed font-sans pl-1 border-l-2 border-border group-hover:border-violet-500/40 transition-colors">
+                      {(() => {
+                        if (!hit.matchedText) {
+                          return <span className="text-muted-foreground italic">No text content loaded for this vector chunk</span>;
+                        }
+                        // Text highlighting
+                        const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                        if (words.length === 0) return hit.matchedText;
+                        const pattern = new RegExp(`(${words.map(w => w.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|')})`, 'gi');
+                        const parts = hit.matchedText.split(pattern);
+                        return parts.map((part, i) => 
+                          pattern.test(part) ? (
+                            <mark key={i} className="bg-violet-500/30 text-foreground font-semibold px-0.5 rounded">
+                              {part}
+                            </mark>
+                          ) : (
+                            part
+                          )
+                        );
+                      })()}
+                    </p>
+
+                    <div className="flex justify-between items-center text-2xs text-muted-foreground">
+                      <span>Reasoning: {hit.explanation}</span>
                     </div>
                   </div>
-
-                  <p className="text-sm text-foreground/90 leading-relaxed font-sans pl-1 border-l-2 border-border group-hover:border-violet-500/40 transition-colors">
-                    {(() => {
-                      if (!hit.matchedText) {
-                        return <span className="text-muted-foreground italic">No text content loaded for this vector chunk</span>;
-                      }
-                      // Simple text highlighting of query words
-                      const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-                      if (words.length === 0) return hit.matchedText;
-                      const pattern = new RegExp(`(${words.map(w => w.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|')})`, 'gi');
-                      const parts = hit.matchedText.split(pattern);
-                      return parts.map((part, i) => 
-                        pattern.test(part) ? (
-                          <mark key={i} className="bg-yellow-500/30 text-foreground font-semibold px-0.5 rounded">
-                            {part}
-                          </mark>
-                        ) : (
-                          part
-                        )
-                      );
-                    })()}
-                  </p>
-
-                  <div className="flex justify-between items-center text-2xs text-muted-foreground">
-                    <span>{hit.explanation}</span>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className="border border-dashed border-border rounded-lg p-12 text-center text-sm text-muted-foreground">

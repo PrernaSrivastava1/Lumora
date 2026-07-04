@@ -54,4 +54,4 @@ Lumora:
   embedding:
     active-provider: OLLAMA
   chunking:
-    default-strategy: FIXED_SIZE
+    default-strategy: SEMANTIC

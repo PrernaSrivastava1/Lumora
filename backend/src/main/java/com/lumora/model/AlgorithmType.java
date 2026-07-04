@@ -8,5 +8,6 @@ public enum AlgorithmType {
     HNSW,
     KD_TREE,
     BRUTE_FORCE,
-    HYBRID
+    HYBRID,
+    KEYWORD
 }

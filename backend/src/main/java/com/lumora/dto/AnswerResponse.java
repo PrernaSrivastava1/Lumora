@@ -17,4 +17,6 @@ public class AnswerResponse {
     private Integer answerTokens;
     private Integer contextSizeChars;
     private String finalPromptSent;
+    private Integer embeddingDimension;
+    private Integer totalVectorsSearched;
 }
