@@ -7,6 +7,8 @@ import com.lumora.model.SearchResponse;
 import com.lumora.repository.VectorStore;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Main search entry point for the application.
  * Exposes methods to query the underlying vector indexes by delegating to {@link SearchContext}.
@@ -34,6 +36,7 @@ public class SearchEngine {
      * @return search query result list and metrics
      * @throws SearchException if validation or strategy execution fails
      */
+    @Transactional(readOnly = true)
     public SearchResponse executeSearch(SearchRequest request) {
         int totalVectors = vectorStore.count();
         long startTime = System.currentTimeMillis();

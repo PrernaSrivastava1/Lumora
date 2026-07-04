@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 @Service
 @Transactional
 public class DocumentService {
@@ -106,8 +109,17 @@ public class DocumentService {
 
         try {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            // Trigger asynchronous processing pipeline
-            documentProcessingOrchestrator.processAsynchronously(savedDoc.getId(), targetLocation, extension.toUpperCase());
+            // Trigger asynchronous processing pipeline after the current transaction commits
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        documentProcessingOrchestrator.processAsynchronously(savedDoc.getId(), targetLocation, extension.toUpperCase());
+                    }
+                });
+            } else {
+                documentProcessingOrchestrator.processAsynchronously(savedDoc.getId(), targetLocation, extension.toUpperCase());
+            }
         } catch (IOException e) {
             savedDoc.setProcessingStatus(ProcessingStatus.FAILED);
             savedDoc.setFailureReason(e.getMessage());
