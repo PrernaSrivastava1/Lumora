@@ -64,3 +64,16 @@ docker-compose.override.yml
 .next/
 .turbo/
 .vercel/
+
+# Local Environment, Credentials & Scratch
+.env
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+scratch/
+**/scratch/
+state.txt
+*.py
+
