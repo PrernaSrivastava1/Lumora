@@ -76,4 +76,7 @@ scratch/
 **/scratch/
 state.txt
 *.py
+PROJECT_AUDIT.md
+DEMO_CHECKLIST.md
+
 
