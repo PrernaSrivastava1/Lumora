@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import {
   MessageSquare,
   Send,
@@ -14,17 +15,22 @@ import {
   StopCircle,
   Activity,
   Layers,
-  Clock,
   Cpu,
-  CheckCircle2,
-  Database
+  Download,
+  FileText,
+  Brain,
+  History,
+  ArrowUpRight
 } from 'lucide-react'
 import apiClient from '@/services/api'
+import { useDocuments } from '@/hooks/useDocuments'
 
 interface SourceReference {
   documentTitle: string
   textPreview: string
   similarityScore: number
+  documentId?: number
+  chunkId?: number
 }
 
 interface Message {
@@ -54,6 +60,14 @@ export default function AIChat() {
   const [algorithm, setAlgorithm] = useState<string>('AUTO')
   const [topK, setTopK] = useState<number>(5)
   const [ollamaOnline, setOllamaOnline] = useState<boolean | null>(null)
+
+  // AI Memory Config
+  const [enableMemory, setEnableMemory] = useState<boolean>(true)
+  const [maxHistorySize, setMaxHistorySize] = useState<number>(5)
+  const [showConfig, setShowConfig] = useState<boolean>(false)
+
+  // Fetch active workspace documents for dynamic suggestions
+  const { data: workspaceDocs } = useDocuments(Number(selectedWorkspaceId))
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -143,7 +157,7 @@ export default function AIChat() {
     setExpandedDebugs((prev) => ({ ...prev, [msgId]: !prev[msgId] }))
   }
 
-  const handleSend = async (e: React.FormEvent, customPrompt?: string) => {
+  const handleSend = async (e: React.FormEvent | null, customPrompt?: string) => {
     if (e) e.preventDefault()
     const promptToSend = customPrompt || inputMsg
     if (!promptToSend.trim() || isSubmitting) return
@@ -163,15 +177,24 @@ export default function AIChat() {
     const controller = new AbortController()
     abortControllerRef.current = controller
 
+    // Formulate conversation history payload
+    const historyPayload = enableMemory
+      ? messages
+          .filter((msg) => msg.id !== 'welcome' && (msg.role === 'user' || msg.role === 'assistant'))
+          .slice(-maxHistorySize * 2)
+          .map((msg) => ({ role: msg.role, content: msg.content }))
+      : []
+
     try {
       const res = await apiClient.post('/rag/chat', {
         query: promptToSend,
         workspaceId: selectedWorkspaceId,
         algorithm: algorithm,
         topK: topK,
+        history: historyPayload
       }, { signal: controller.signal })
 
-      if (res.data.success) {
+      if (res.data.success && res.data.data) {
         const { 
           answer, 
           sources, 
@@ -189,16 +212,16 @@ export default function AIChat() {
         
         // Simulated streaming/typing animation
         let displayedAnswer = ''
-        const fullAnswer = answer
+        const fullAnswer = answer || ''
         setMessages((prev) => [
           ...prev,
           {
             id: assistantMsgId,
             role: 'assistant',
             content: '',
-            sources,
-            algorithmUsed,
-            responseTimeMs,
+            sources: sources || [],
+            algorithmUsed: algorithmUsed || 'AUTO',
+            responseTimeMs: responseTimeMs || 0,
             promptTokens,
             answerTokens,
             contextSizeChars,
@@ -250,7 +273,7 @@ export default function AIChat() {
   const handleRegenerate = (msgIndex: number) => {
     for (let i = msgIndex - 1; i >= 0; i--) {
       if (messages[i].role === 'user') {
-        handleSend(null as any, messages[i].content)
+        handleSend(null, messages[i].content)
         break
       }
     }
@@ -270,6 +293,138 @@ export default function AIChat() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
   }
+
+  // Dynamic suggestion generation based on active workspace documents
+  const getDynamicSuggestions = (): string[] => {
+    const defaultSuggestions = [
+      'Summarize this workspace',
+      'What skills are needed for a developer?',
+      'Compare backend and frontend engineering roles'
+    ]
+
+    if (!workspaceDocs || workspaceDocs.length === 0) {
+      return defaultSuggestions
+    }
+
+    const suggestions: string[] = ['Summarize this workspace']
+
+    // Individual doc explaining suggestions
+    workspaceDocs.slice(0, 2).forEach((doc: any) => {
+      suggestions.push(`Explain the document "${doc.title}"`)
+    })
+
+    // Resumes processing
+    const resumes = workspaceDocs.filter((d: any) =>
+      d.title.toLowerCase().includes('resume') ||
+      d.title.toLowerCase().includes('cv') ||
+      d.title.toLowerCase().includes('candidate')
+    )
+
+    if (resumes.length > 0) {
+      const firstCand = resumes[0].title.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ")
+      suggestions.push(`What skills does ${firstCand} have?`)
+
+      if (resumes.length > 1) {
+        const secondCand = resumes[1].title.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ")
+        suggestions.push(`Compare the resumes of ${firstCand} and ${secondCand}`)
+      } else {
+        suggestions.push('Compare candidate resumes')
+      }
+    }
+
+    const techDocs = workspaceDocs.filter((d: any) =>
+      d.title.toLowerCase().includes('tech') ||
+      d.title.toLowerCase().includes('backend') ||
+      d.title.toLowerCase().includes('architecture') ||
+      d.title.toLowerCase().includes('code')
+    )
+    if (techDocs.length > 0) {
+      suggestions.push('List backend technologies')
+    }
+
+    return [...new Set(suggestions)].slice(0, 4)
+  }
+
+  // Exports
+  const exportToMarkdown = () => {
+    let content = `# Lumora Chat Session - ${new Date().toLocaleDateString()}\n\n`
+    messages.forEach((msg) => {
+      const role = msg.role === 'user' ? 'User' : 'Lumora AI'
+      content += `### ${role}\n${msg.content}\n\n`
+      if (msg.sources && msg.sources.length > 0) {
+        content += `*Sources cited:*\n`
+        msg.sources.forEach((src) => {
+          content += `- **${src.documentTitle}** (Relevance: ${Math.round(src.similarityScore * 100)}%)\n`
+        })
+        content += `\n`
+      }
+    })
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `lumora-chat-export-${Date.now()}.md`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const exportToPDF = () => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    let chatHtml = `
+      <html>
+      <head>
+        <title>Lumora Chat Export</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 40px; color: #1f2937; line-height: 1.6; }
+          h1 { color: #6366f1; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; font-size: 24px; margin-bottom: 2px; }
+          .subtitle { font-size: 12px; color: #9ca3af; margin-bottom: 30px; }
+          .message { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #f3f4f6; }
+          .role { font-weight: bold; font-size: 14px; text-transform: uppercase; margin-bottom: 5px; color: #6366f1; }
+          .role-user { color: #0b84ff; }
+          .content { font-size: 14px; white-space: pre-line; }
+          .sources { font-size: 11px; color: #6b7280; margin-top: 10px; padding: 10px; background-color: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; }
+          .source-title { font-weight: 600; }
+        </style>
+      </head>
+      <body>
+        <h1>Lumora Chat Session Export</h1>
+        <div class="subtitle">Exported on: ${new Date().toLocaleString()}</div>
+    `
+
+    messages.forEach((msg) => {
+      const roleClass = msg.role === 'user' ? 'role-user' : ''
+      const roleLabel = msg.role === 'user' ? 'User' : 'Lumora AI'
+      chatHtml += `
+        <div class="message">
+          <div class="role ${roleClass}">${roleLabel}</div>
+          <div class="content">${msg.content}</div>
+      `
+      if (msg.sources && msg.sources.length > 0) {
+        chatHtml += `<div class="sources"><span style="font-weight: bold;">Sources cited:</span><br/>`
+        msg.sources.forEach((src) => {
+          chatHtml += `- <span class="source-title">${src.documentTitle}</span> (Relevance: ${Math.round(src.similarityScore * 100)}%)<br/>`
+        })
+        chatHtml += `</div>`
+      }
+      chatHtml += `</div>`
+    })
+
+    chatHtml += `
+      <script>
+        window.onload = function() { window.print(); window.close(); }
+      </script>
+      </body>
+      </html>
+    `
+    printWindow.document.write(chatHtml)
+    printWindow.document.close()
+  }
+
+  const dynamicSuggestions = getDynamicSuggestions()
 
   return (
     <div className="flex flex-col h-[calc(100vh-8.5rem)] rounded-xl border border-border bg-card overflow-hidden">
@@ -329,16 +484,84 @@ export default function AIChat() {
               className="w-14 px-2 py-1 rounded-lg border border-input bg-background text-xs text-center focus:outline-none"
             />
           </div>
+
+          {/* Memory Settings Trigger */}
+          <button
+            onClick={() => setShowConfig(!showConfig)}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              showConfig ? 'border-violet-500 bg-violet-500/10 text-violet-400' : 'border-border bg-background hover:bg-muted/10'
+            }`}
+          >
+            <Brain className="h-3.5 w-3.5" />
+            Memory Setup
+          </button>
         </div>
 
-        <button
-          onClick={handleClear}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border hover:bg-red-500/5 hover:text-red-400 hover:border-red-500/20 transition-all"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Clear Chat
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Export Options */}
+          {messages.length > 1 && (
+            <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
+              <button
+                onClick={exportToMarkdown}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-2xs font-semibold border-r border-border hover:bg-muted/20 text-muted-foreground hover:text-foreground transition-colors"
+                title="Export as Markdown"
+              >
+                <Download className="h-3 w-3" />
+                MD
+              </button>
+              <button
+                onClick={exportToPDF}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-2xs font-semibold hover:bg-muted/20 text-muted-foreground hover:text-foreground transition-colors"
+                title="Export as PDF Document"
+              >
+                <FileText className="h-3 w-3" />
+                PDF
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={handleClear}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border hover:bg-red-500/5 hover:text-red-400 hover:border-red-500/20 transition-all"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Clear Chat
+          </button>
+        </div>
       </div>
+
+      {/* Memory Config Slide-down Panel */}
+      {showConfig && (
+        <div className="bg-muted/30 border-b border-border p-4 flex flex-wrap items-center gap-6 animate-in slide-in-from-top duration-200">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="enableMemory"
+              checked={enableMemory}
+              onChange={(e) => setEnableMemory(e.target.checked)}
+              className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
+            />
+            <label htmlFor="enableMemory" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-1">
+              <History className="h-3.5 w-3.5 text-violet-400" />
+              Enable Conversation History Memory
+            </label>
+          </div>
+
+          {enableMemory && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground">Context message limit (turns):</span>
+              <input
+                type="number"
+                min={1}
+                max={15}
+                value={maxHistorySize}
+                onChange={(e) => setMaxHistorySize(Number(e.target.value))}
+                className="w-14 px-2 py-1 rounded-lg border border-input bg-background text-xs text-center focus:outline-none"
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Chat Feed Area */}
       <div className="flex-1 flex flex-col h-full bg-background relative overflow-hidden">
@@ -429,7 +652,7 @@ export default function AIChat() {
                       <div className="grid grid-cols-2 gap-2 border-b border-border pb-2 text-foreground">
                         <div>Search Algorithm: <strong className="text-violet-400">{msg.algorithmUsed}</strong></div>
                         <div>Response Generation Time: <strong>{msg.responseTimeMs} ms</strong></div>
-                        <div>Query Dimension: <strong>{msg.embeddingDimension || 768}D</strong></div>
+                        <div>Query Dimension: <strong>{msg.embeddingDimension || 384}D</strong></div>
                         <div>Total Workspace Vectors: <strong>{msg.totalVectorsSearched || 0}</strong></div>
                       </div>
                       <div className="space-y-1">
@@ -444,6 +667,16 @@ export default function AIChat() {
                               <span className="text-emerald-400">Score: {s.similarityScore.toFixed(4)} ({(s.similarityScore * 100).toFixed(1)}%)</span>
                             </div>
                             <p className="text-[10px] italic">"{s.textPreview.trim()}"</p>
+                            {s.documentId && s.chunkId && (
+                              <div className="mt-1.5 text-right">
+                                <Link
+                                  to={`/documents/${s.documentId}?highlightChunkId=${s.chunkId}`}
+                                  className="inline-flex items-center gap-0.5 text-3xs font-bold text-violet-400 hover:text-violet-300 transition-colors bg-violet-500/10 px-1.5 py-0.5 rounded"
+                                >
+                                  Scroll to Content <ArrowUpRight className="h-2.5 w-2.5" />
+                                </Link>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -471,9 +704,19 @@ export default function AIChat() {
                           <div key={sIdx} className="pt-2 first:pt-0 text-xs">
                             <div className="flex items-center justify-between mb-1.5">
                               <span className="font-semibold text-foreground">{src.documentTitle}</span>
-                              <span className="text-[10px] bg-violet-500/10 text-violet-400 px-1.5 py-0.5 rounded-full">
-                                Relevance: {Math.round(src.similarityScore * 100)}%
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] bg-violet-500/10 text-violet-400 px-1.5 py-0.5 rounded-full">
+                                  Relevance: {Math.round(src.similarityScore * 100)}%
+                                </span>
+                                {src.documentId && src.chunkId && (
+                                  <Link
+                                    to={`/documents/${src.documentId}?highlightChunkId=${src.chunkId}`}
+                                    className="text-[10px] text-muted-foreground hover:text-foreground font-semibold flex items-center gap-0.5"
+                                  >
+                                    View <ArrowUpRight className="h-2.5 w-2.5" />
+                                  </Link>
+                                )}
+                              </div>
                             </div>
                             <p className="text-muted-foreground italic leading-relaxed text-[11px] bg-card p-2 rounded border border-border">
                               "{src.textPreview.trim()}"
@@ -532,6 +775,23 @@ export default function AIChat() {
             </div>
           )}
         </div>
+
+        {/* Suggested prompts section */}
+        {!inputMsg.trim() && !isSubmitting && selectedWorkspaceId && (
+          <div className="px-6 py-2 flex flex-wrap gap-2 animate-in fade-in duration-200">
+            {dynamicSuggestions.map((suggestion, sIdx) => (
+              <button
+                key={sIdx}
+                type="button"
+                onClick={() => handleSend(null, suggestion)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground hover:text-foreground hover:bg-muted/30 hover:border-violet-500/30 transition-all font-medium cursor-pointer"
+              >
+                <Sparkles className="h-3 w-3 text-violet-400 shrink-0" />
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Input Form Bar */}
         <form onSubmit={(e) => handleSend(e)} className="p-4 border-t border-border bg-card">

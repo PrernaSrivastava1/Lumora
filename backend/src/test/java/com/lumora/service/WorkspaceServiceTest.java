@@ -29,6 +29,15 @@ class WorkspaceServiceTest {
     @Mock
     private com.lumora.repository.UserRepository userRepository;
 
+    @Mock
+    private com.lumora.repository.DocumentRepository documentRepository;
+
+    @Mock
+    private com.lumora.repository.ChunkRepository chunkRepository;
+
+    @Mock
+    private com.lumora.analytics.SearchAnalyticsService analyticsService;
+
     @InjectMocks
     private WorkspaceService workspaceService;
 

@@ -59,3 +59,11 @@ export function useRetryDocument() {
     },
   })
 }
+
+export function useDocumentChunks(id: number) {
+  return useQuery({
+    queryKey: ['documentChunks', id],
+    queryFn: () => documentService.getDocumentChunks(id).then((res) => res.data),
+    enabled: !!id,
+  })
+}

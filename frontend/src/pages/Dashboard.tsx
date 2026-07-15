@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Activity,
   FolderPlus,
   FileUp,
   Search,
@@ -12,9 +11,7 @@ import {
   ArrowRight,
   Sparkles,
   BarChart3,
-  ListTodo,
-  HelpCircle,
-  HelpCircle as QuestionIcon
+  ListTodo
 } from 'lucide-react'
 import apiClient from '@/services/api'
 
@@ -38,7 +35,6 @@ export default function Dashboard() {
     vectorCount: 0
   })
   const [ollamaOnline, setOllamaOnline] = useState<boolean | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [benchmarks, setBenchmarks] = useState<BenchmarkResult[]>([])
   
   // Guided stepper demo step state
@@ -81,8 +77,6 @@ export default function Dashboard() {
       } catch (err) {
         console.error('Failed to load dashboard data:', err)
         setOllamaOnline(false)
-      } finally {
-        setIsLoading(false)
       }
     }
 

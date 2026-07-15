@@ -44,6 +44,12 @@ public class DocumentController {
         return ApiResponse.success("Document retry initiated successfully", null);
     }
 
+    @GetMapping("/{id}/chunks")
+    public ApiResponse<List<com.lumora.dto.DocumentChunkResponseDto>> getDocumentChunks(@PathVariable Long id) {
+        List<com.lumora.dto.DocumentChunkResponseDto> chunks = documentService.getDocumentChunks(id);
+        return ApiResponse.success("Retrieved document chunks", chunks);
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteDocument(@PathVariable Long id) {
         documentService.deleteDocument(id);

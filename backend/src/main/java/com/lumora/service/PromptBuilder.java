@@ -9,6 +9,10 @@ import java.util.List;
 public class PromptBuilder {
 
     public String buildPrompt(String query, List<SourceReference> sources) {
+        return buildPrompt(query, sources, null);
+    }
+
+    public String buildPrompt(String query, List<SourceReference> sources, List<com.lumora.dto.ChatMessageDto> history) {
         StringBuilder builder = new StringBuilder();
         builder.append("You are Lumora, an AI knowledge assistant.\n\n");
         builder.append("Answer ONLY using the retrieved context.\n");
@@ -29,6 +33,15 @@ public class PromptBuilder {
         }
         builder.append("=========================\n\n");
         
+        if (history != null && !history.isEmpty()) {
+            builder.append("=== CONVERSATION HISTORY ===\n");
+            for (com.lumora.dto.ChatMessageDto msg : history) {
+                String roleName = "user".equalsIgnoreCase(msg.getRole()) ? "User" : "Assistant";
+                builder.append(roleName).append(": ").append(msg.getContent()).append("\n");
+            }
+            builder.append("============================\n\n");
+        }
+
         builder.append("User Question: ").append(query).append("\n");
         builder.append("Answer (concise, clear, and markdown formatted):");
         

@@ -222,14 +222,34 @@ Lumora implements a complete local RAG query pipeline powered by its custom Java
 
 ---
 
-## What You Can Learn from This Project
-By exploring the Lumora codebase, you can learn:
-1. **How to implement graph networks**: Read the HNSW implementation to see how nodes connect across virtual levels.
-2. **Dynamic Strategy Routing**: Understand how the Strategy Pattern routes user queries based on data density.
-3. **Local embedding architectures**: Learn how text chunking and vector creation work without invoking paid cloud providers.
+## Product Demo Guide (Preseeded Reviewer Flow)
 
----
+Lumora comes preloaded with a default **Demo Workspace** containing pre-chunked resumes and system specs. This allows reviewers to explore 100% of the platform features without having to install Ollama or upload custom files!
 
-## Future Improvements
-- **Real-time Graph Visualizer**: A canvas UI showing HNSW query traversals level-by-layer.
-- **Metadata Filters**: Support SQL-like filters alongside vector distance measurements.
+### Step-by-Step Demo Guide:
+
+1. **Log In / Register**:
+   - Go to [http://localhost:5173](http://localhost:5173).
+   - Click **Register** and create a user (e.g., `reviewer`).
+   - Log in using your credentials.
+2. **Explore Preloaded Workspace Statistics**:
+   - Navigate to the **Analytics** page.
+   - Select **Demo Workspace** in the stats dropdown.
+   - Review preseeded metrics showing document counts, segments, average processing bounds, and active counters.
+3. **Trigger On-Demand Benchmarking**:
+   - Navigate to the **Benchmark** page.
+   - Enter a query (e.g., `candidate skills`) and select **Demo Workspace**.
+   - Click **Run Comparative Suite**.
+   - Review the newly drawn interactive bar charts comparing **Latency** (ms) and **Accuracy/Recall** (%) side-by-side.
+4. **Vector Search with Document Viewer**:
+   - Navigate to the **Vector Search** page.
+   - Enter `React Developer` or search terms (test synonym expansion by typing `backend` or `frontend`).
+   - Review matching search hits with rank and confidence values.
+   - Click the **Open** link on a hit.
+   - The app navigates to the **Document Viewer**, highlights the exact matching segment, and scrolls it into view.
+5. **AI Chat with Memory & Suggestions**:
+   - Navigate to the **AI Chat** page.
+   - Notice the **Smart AI Suggestions** chips at the bottom (e.g., "Summarize this workspace", "What skills does john doe resume have?"). Click any suggestion to submit it.
+   - Ask follow-up questions. Click **Memory Setup** to toggle/customize chat history turn limits.
+   - Click **Why this answer?** to inspect retrieval scores.
+   - Export your conversation by clicking the **MD** or **PDF** export buttons in the header.

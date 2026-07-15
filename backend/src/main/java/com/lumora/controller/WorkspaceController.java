@@ -43,6 +43,12 @@ public class WorkspaceController {
         return ApiResponse.success("Workspace updated successfully", ws);
     }
 
+    @GetMapping("/{id}/stats")
+    public ApiResponse<java.util.Map<String, Object>> getStats(@PathVariable Long id) {
+        java.util.Map<String, Object> stats = workspaceService.getWorkspaceStats(id);
+        return ApiResponse.success("Retrieved workspace statistics", stats);
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         workspaceService.deleteWorkspace(id);

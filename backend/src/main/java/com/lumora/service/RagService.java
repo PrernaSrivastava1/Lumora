@@ -27,6 +27,7 @@ public class RagService {
     private final PromptBuilder promptBuilder;
     private final RestTemplate restTemplate;
     private final VectorStore vectorStore;
+    private final com.lumora.analytics.SearchAnalyticsService analyticsService;
 
     @Value("${ollama.base-url:http://localhost:11434}")
     private String ollamaBaseUrl;
@@ -38,17 +39,24 @@ public class RagService {
                       DocumentRepository documentRepository,
                       PromptBuilder promptBuilder,
                       @Qualifier("ollamaRestTemplate") RestTemplate restTemplate,
-                      VectorStore vectorStore) {
+                      VectorStore vectorStore,
+                      com.lumora.analytics.SearchAnalyticsService analyticsService) {
         this.searchContext = searchContext;
         this.documentRepository = documentRepository;
         this.promptBuilder = promptBuilder;
         this.restTemplate = restTemplate;
         this.vectorStore = vectorStore;
+        this.analyticsService = analyticsService;
     }
 
     @Transactional
     public AnswerResponse performRag(RagRequest request) {
+        if (vectorStore.count(request.getWorkspaceId()) == 0) {
+            throw new IllegalArgumentException("No indexed documents found in this workspace.");
+        }
+
         long startTime = System.currentTimeMillis();
+        analyticsService.incrementAiQuestionsCount(request.getWorkspaceId());
 
         // 1. Semantic search for Top-K chunks
         SearchRequest searchRequest = SearchRequest.builder()
@@ -72,12 +80,14 @@ public class RagService {
                         .documentTitle(docTitle)
                         .textPreview(result.getMatchedText())
                         .similarityScore(result.getScore())
+                        .documentId(result.getDocumentId())
+                        .chunkId(result.getChunkId())
                         .build());
             }
         }
 
         // 2. Build system prompt
-        String prompt = promptBuilder.buildPrompt(request.getQuery(), sources);
+        String prompt = promptBuilder.buildPrompt(request.getQuery(), sources, request.getHistory());
 
         // 3. Invoke local Ollama generator
         String modelName = request.getLlmModel() != null ? request.getLlmModel() : defaultLlmModel;
@@ -102,13 +112,11 @@ public class RagService {
                     answerTokens = ((Number) response.get("eval_count")).intValue();
                 }
             } else {
-                answer = "Error: Received empty response from local Ollama generation service.";
+                answer = generateLocalFallbackResponse(request.getQuery(), sources);
             }
         } catch (Exception e) {
-            logger.warn("Ollama LLM connection failed. Falling back to synthetic mock response. Error: {}", e.getMessage());
-            answer = "*(Ollama Offline Fallback)*\n\nBased on your documents, here is the retrieved information:\n"
-                    + (sources.isEmpty() ? "No document context matched your query." 
-                       : "1. " + sources.get(0).getTextPreview());
+            logger.warn("Ollama LLM connection failed. Falling back to dynamic mock response. Error: {}", e.getMessage());
+            answer = generateLocalFallbackResponse(request.getQuery(), sources);
         }
 
         long endTime = System.currentTimeMillis();
@@ -125,5 +133,25 @@ public class RagService {
                 .embeddingDimension(searchResponse.getEmbeddingDimension())
                 .totalVectorsSearched(vectorStore.count(request.getWorkspaceId()))
                 .build();
+    }
+
+    private String generateLocalFallbackResponse(String query, List<SourceReference> sources) {
+        if (sources == null || sources.isEmpty()) {
+            return "[Local Demo Assistant Mode]\n\nI couldn't find any relevant documents in the workspace for: \"" + query + "\". Please upload files containing these keywords.";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[Local RAG Simulation Mode - Offline]\n\n");
+        sb.append("Here is the relevant information extracted from your workspace documents matching your query:\n\n");
+
+        for (int i = 0; i < Math.min(sources.size(), 3); i++) {
+            SourceReference src = sources.get(i);
+            sb.append("### Source #").append(i + 1).append(": ").append(src.getDocumentTitle())
+              .append(" (Relevance: ").append(Math.round(src.getSimilarityScore() * 100)).append("%)\n");
+            sb.append("> \"").append(src.getTextPreview().trim()).append("\"\n\n");
+        }
+
+        sb.append("--- \n*Note: Ollama is currently offline. Start it using 'ollama serve' to enable LLM-generated synthesis.*");
+        return sb.toString();
     }
 }

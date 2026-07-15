@@ -20,4 +20,5 @@ public class BenchmarkResult {
     private long maximumLatency;
     private int totalExecutions;
     private double successRate;
+    private double accuracy;
 }

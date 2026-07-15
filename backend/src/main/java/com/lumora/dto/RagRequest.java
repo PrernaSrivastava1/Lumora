@@ -23,4 +23,6 @@ public class RagRequest {
     private int topK = 5;
 
     private String llmModel;
+
+    private java.util.List<ChatMessageDto> history;
 }

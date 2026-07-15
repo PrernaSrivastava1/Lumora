@@ -16,8 +16,7 @@ import {
   Layers,
   Database,
   ExternalLink,
-  BookOpen,
-  CheckCircle
+  BookOpen
 } from 'lucide-react'
 
 export default function Search() {
@@ -345,7 +344,7 @@ export default function Search() {
                         </span>
                         {hit.documentId && (
                           <Link
-                            to={`/documents`}
+                            to={`/documents/${hit.documentId}?highlightChunkId=${hit.chunkId}`}
                             className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-400 hover:text-violet-300 transition-colors"
                           >
                             Open <ExternalLink className="h-3 w-3" />

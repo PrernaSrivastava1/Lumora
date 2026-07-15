@@ -33,6 +33,7 @@ public class DocumentService {
     private final ProcessingService processingService;
     private final ChunkingService chunkingService;
     private final DocumentProcessingOrchestrator documentProcessingOrchestrator;
+    private final com.lumora.repository.ChunkRepository chunkRepository;
     private final Path uploadPath;
 
     private static final Set<String> SUPPORTED_EXTENSIONS = Set.of("pdf", "docx", "txt", "md");
@@ -41,12 +42,14 @@ public class DocumentService {
                            WorkspaceRepository workspaceRepository,
                            ProcessingService processingService,
                            ChunkingService chunkingService,
-                           DocumentProcessingOrchestrator documentProcessingOrchestrator) {
+                           DocumentProcessingOrchestrator documentProcessingOrchestrator,
+                           com.lumora.repository.ChunkRepository chunkRepository) {
         this.documentRepository = documentRepository;
         this.workspaceRepository = workspaceRepository;
         this.processingService = processingService;
         this.chunkingService = chunkingService;
         this.documentProcessingOrchestrator = documentProcessingOrchestrator;
+        this.chunkRepository = chunkRepository;
         this.uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
         try {
             Files.createDirectories(uploadPath);
@@ -173,6 +176,23 @@ public class DocumentService {
     public Document findEntityById(Long id) {
         return documentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Document not found with ID: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.lumora.dto.DocumentChunkResponseDto> getDocumentChunks(Long documentId) {
+        if (!documentRepository.existsById(documentId)) {
+            throw new IllegalArgumentException("Document not found with ID: " + documentId);
+        }
+        return chunkRepository.findByDocumentId(documentId).stream()
+                .map(chunk -> com.lumora.dto.DocumentChunkResponseDto.builder()
+                        .id(chunk.getId())
+                        .chunkIndex(chunk.getChunkIndex())
+                        .content(chunk.getContent())
+                        .startChar(chunk.getStartChar())
+                        .endChar(chunk.getEndChar())
+                        .build())
+                .sorted(java.util.Comparator.comparingInt(com.lumora.dto.DocumentChunkResponseDto::getChunkIndex))
+                .collect(Collectors.toList());
     }
 
     private String getFileExtension(String filename) {

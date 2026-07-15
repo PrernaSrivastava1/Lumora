@@ -143,5 +143,19 @@ public class SearchAnalyticsService {
     public void clearHistory() {
         history.clear();
         idGenerator.set(1);
+        aiQuestionsCount.clear();
+    }
+
+    private final Map<Long, java.util.concurrent.atomic.AtomicLong> aiQuestionsCount = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public void incrementAiQuestionsCount(Long workspaceId) {
+        if (workspaceId != null) {
+            aiQuestionsCount.computeIfAbsent(workspaceId, k -> new java.util.concurrent.atomic.AtomicLong(0)).incrementAndGet();
+        }
+    }
+
+    public long getAiQuestionsCount(Long workspaceId) {
+        if (workspaceId == null) return 0;
+        return aiQuestionsCount.computeIfAbsent(workspaceId, k -> new java.util.concurrent.atomic.AtomicLong(0)).get();
     }
 }

@@ -38,7 +38,10 @@ public class SearchEngine {
      */
     @Transactional(readOnly = true)
     public SearchResponse executeSearch(SearchRequest request) {
-        int totalVectors = vectorStore.count();
+        if (vectorStore.count(request.getWorkspaceId()) == 0) {
+            throw new IllegalArgumentException("No indexed documents found in this workspace.");
+        }
+        int totalVectors = vectorStore.count(request.getWorkspaceId());
         long startTime = System.currentTimeMillis();
         boolean success = false;
         String errorMessage = null;
@@ -54,6 +57,7 @@ public class SearchEngine {
         } finally {
             long duration = System.currentTimeMillis() - startTime;
             analyticsService.record(SearchExecutionRecord.builder()
+                    .workspaceId(request.getWorkspaceId())
                     .algorithm(request.getAlgorithm())
                     .metric(request.getMetric())
                     .topK(request.getTopK())

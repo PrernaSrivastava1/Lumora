@@ -21,10 +21,12 @@ public class SearchExecutionRecord {
     private LocalDateTime timestamp;
     private AlgorithmType algorithm;
     private DistanceMetric metric;
+    private Long workspaceId;
     private long executionTimeMs;
     private int topK;
     private int totalVectors;
     private int resultCount;
     private boolean success;
     private String errorMessage;
+    private double accuracy;
 }

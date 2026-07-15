@@ -50,6 +50,22 @@ public class KeywordSearchStrategy extends AbstractSearchStrategy {
         String query = request.getQuery().toLowerCase();
         String[] queryKeywords = query.split("\\s+");
 
+        java.util.Set<String> expandedKeywords = new java.util.HashSet<>();
+        for (String keyword : queryKeywords) {
+            expandedKeywords.add(keyword);
+            if (keyword.equals("backend") || keyword.equals("server")) {
+                expandedKeywords.addAll(java.util.Arrays.asList("java", "spring", "springboot", "api", "rest", "backend", "server", "database", "sql"));
+            } else if (keyword.equals("frontend") || keyword.equals("ui") || keyword.equals("ux")) {
+                expandedKeywords.addAll(java.util.Arrays.asList("react", "typescript", "javascript", "css", "html", "vite", "tailwind", "ui", "ux", "frontend"));
+            } else if (keyword.equals("candidate") || keyword.equals("resume") || keyword.equals("cv") || keyword.equals("applicant")) {
+                expandedKeywords.addAll(java.util.Arrays.asList("resume", "cv", "skills", "experience", "education", "work", "applicant", "candidate"));
+            } else if (keyword.equals("skills") || keyword.equals("technologies") || keyword.equals("stack")) {
+                expandedKeywords.addAll(java.util.Arrays.asList("technologies", "experience", "stack", "languages", "tools", "skills"));
+            } else if (keyword.equals("compare") || keyword.equals("versus")) {
+                expandedKeywords.addAll(java.util.Arrays.asList("difference", "versus", "comparison", "similarities", "compare"));
+            }
+        }
+
         List<SearchResult> rawResults = new ArrayList<>();
 
         for (DocumentChunk chunk : allChunks) {
@@ -57,7 +73,7 @@ public class KeywordSearchStrategy extends AbstractSearchStrategy {
             double matchScore = 0.0;
 
             // 1. Keyword overlap (Frequency / occurrence)
-            for (String keyword : queryKeywords) {
+            for (String keyword : expandedKeywords) {
                 if (keyword.length() < 2) continue; // skip single character words
                 int idx = 0;
                 int occurrences = 0;
@@ -65,7 +81,8 @@ public class KeywordSearchStrategy extends AbstractSearchStrategy {
                     occurrences++;
                     idx += keyword.length();
                 }
-                matchScore += occurrences;
+                double weight = java.util.Arrays.asList(queryKeywords).contains(keyword) ? 1.0 : 0.5;
+                matchScore += (occurrences * weight);
             }
 
             if (matchScore == 0.0) {

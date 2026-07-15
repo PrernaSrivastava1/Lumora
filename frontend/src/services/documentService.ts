@@ -35,5 +35,10 @@ export const documentService = {
     const response = await apiClient.post<ApiResponse<void>>(`/documents/${id}/retry`)
     return response.data
   },
+
+  getDocumentChunks: async (id: number): Promise<ApiResponse<any[]>> => {
+    const response = await apiClient.get<ApiResponse<any[]>>(`/documents/${id}/chunks`)
+    return response.data
+  },
 }
 export default documentService

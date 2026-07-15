@@ -4,6 +4,7 @@ import com.lumora.algorithms.common.SearchStrategy;
 import com.lumora.model.AlgorithmType;
 import com.lumora.model.SearchRequest;
 import com.lumora.model.SearchResponse;
+import com.lumora.model.SearchResult;
 import com.lumora.repository.VectorStore;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +66,12 @@ public class BenchmarkService {
                     .max()
                     .orElse(0L);
 
+            double avgAccuracy = records.stream()
+                    .filter(SearchExecutionRecord::isSuccess)
+                    .mapToDouble(SearchExecutionRecord::getAccuracy)
+                    .average()
+                    .orElse(1.0);
+
             results.add(BenchmarkResult.builder()
                     .algorithm(algorithm)
                     .totalExecutions(total)
@@ -72,6 +79,7 @@ public class BenchmarkService {
                     .averageLatency(avgLatency)
                     .minimumLatency(minLatency)
                     .maximumLatency(maxLatency)
+                    .accuracy(avgAccuracy)
                     .build());
         });
 
@@ -87,13 +95,41 @@ public class BenchmarkService {
      * @return dynamic benchmarking comparison
      */
     public List<BenchmarkResult> runOnDemandBenchmark(SearchRequest request) {
-        int totalVectors = vectorStore.count();
+        int totalVectors = vectorStore.count(request.getWorkspaceId());
+
+        java.util.Set<Long> baselineIds = new java.util.HashSet<>();
+        // Find brute force strategy and run it first to get baseline
+        for (SearchStrategy strategy : strategies) {
+            if (strategy.getAlgorithmType() == AlgorithmType.BRUTE_FORCE) {
+                try {
+                    SearchRequest customRequest = SearchRequest.builder()
+                            .query(request.getQuery())
+                            .algorithm(AlgorithmType.BRUTE_FORCE)
+                            .metric(request.getMetric())
+                            .topK(request.getTopK())
+                            .workspaceId(request.getWorkspaceId())
+                            .build();
+                    SearchResponse response = strategy.search(customRequest);
+                    if (response != null && response.getResults() != null) {
+                        for (SearchResult r : response.getResults()) {
+                            if (r.getChunkId() != null) {
+                                baselineIds.add(r.getChunkId());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+                break;
+            }
+        }
 
         for (SearchStrategy strategy : strategies) {
             long start = System.currentTimeMillis();
             boolean success = false;
             String errorMsg = null;
             int resultCount = 0;
+            double accuracy = 1.0;
 
             try {
                 SearchRequest customRequest = SearchRequest.builder()
@@ -107,6 +143,16 @@ public class BenchmarkService {
                 SearchResponse response = strategy.search(customRequest);
                 resultCount = response.getResultCount();
                 success = true;
+
+                if (strategy.getAlgorithmType() == AlgorithmType.BRUTE_FORCE) {
+                    accuracy = 1.0;
+                } else if (response != null && response.getResults() != null && !baselineIds.isEmpty()) {
+                    long overlap = response.getResults().stream()
+                            .map(SearchResult::getChunkId)
+                            .filter(baselineIds::contains)
+                            .count();
+                    accuracy = (double) overlap / Math.min(request.getTopK(), baselineIds.size());
+                }
             } catch (Exception e) {
                 errorMsg = e.getMessage();
             }
@@ -114,6 +160,7 @@ public class BenchmarkService {
             long elapsed = System.currentTimeMillis() - start;
 
             analyticsService.record(SearchExecutionRecord.builder()
+                    .workspaceId(request.getWorkspaceId())
                     .algorithm(strategy.getAlgorithmType())
                     .metric(request.getMetric())
                     .topK(request.getTopK())
@@ -122,6 +169,7 @@ public class BenchmarkService {
                     .success(success)
                     .resultCount(resultCount)
                     .errorMessage(errorMsg)
+                    .accuracy(accuracy)
                     .build());
         }
 
