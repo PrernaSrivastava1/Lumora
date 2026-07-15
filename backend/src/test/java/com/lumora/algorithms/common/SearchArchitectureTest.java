@@ -45,11 +45,23 @@ class SearchArchitectureTest {
 
     @Test
     void testSearchStrategyThrowsUnsupportedOperationException() {
-        SearchRequest request = validRequestBuilder.algorithm(AlgorithmType.HYBRID).build();
+        SearchStrategy mockStrategy = new AbstractSearchStrategy() {
+            @Override
+            public AlgorithmType getAlgorithmType() {
+                return AlgorithmType.BRUTE_FORCE;
+            }
+
+            @Override
+            protected List<SearchResult> doSearch(SearchRequest request) {
+                throw new UnsupportedOperationException("Not implemented yet");
+            }
+        };
+
+        SearchRequest request = validRequestBuilder.algorithm(AlgorithmType.BRUTE_FORCE).build();
 
         // Template method should execute and invoke the subclass doSearch, throwing the expected error
         UnsupportedOperationException ex = assertThrows(UnsupportedOperationException.class, () ->
-                searchEngine.executeSearch(request));
+                mockStrategy.search(request));
         assertEquals("Not implemented yet", ex.getMessage());
     }
 

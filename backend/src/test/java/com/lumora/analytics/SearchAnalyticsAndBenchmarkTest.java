@@ -169,6 +169,6 @@ class SearchAnalyticsAndBenchmarkTest {
                         .param("k", "2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data", hasSize(4))); // 4 strategies (BF, HNSW, KD, Hybrid)
+                .andExpect(jsonPath("$.data", hasSize(5))); // 5 strategies (BF, HNSW, KD, Hybrid, Keyword)
     }
 }

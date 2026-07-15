@@ -130,12 +130,17 @@ class DocumentControllerTest {
                 "## Notes".getBytes()
         );
 
-        mockMvc.perform(multipart("/api/v1/documents")
+        org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(multipart("/api/v1/documents")
                 .file(mockFile)
-                .param("workspaceId", String.valueOf(testWorkspace.getId())));
+                .param("workspaceId", String.valueOf(testWorkspace.getId())))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        // Verify loaded doc has ID 1L
-        mockMvc.perform(delete("/api/v1/documents/1"))
+        Number idNum = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.data.id");
+        long docId = idNum.longValue();
+
+        // Delete using dynamic ID
+        mockMvc.perform(delete("/api/v1/documents/" + docId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)));
 

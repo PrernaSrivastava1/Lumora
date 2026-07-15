@@ -39,6 +39,9 @@ class RagControllerTest {
     private ChunkRepository chunkRepository;
 
     @Autowired
+    private VectorStore vectorStore;
+
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -89,7 +92,16 @@ class RagControllerTest {
                 .content("Our office hours are from 9 AM to 5 PM, Monday through Friday.")
                 .chunkIndex(0)
                 .build();
-        chunkRepository.saveAndFlush(chunk);
+        chunk = chunkRepository.saveAndFlush(chunk);
+
+        vectorStore.clear(workspace.getId());
+        float[] values = new float[768];
+        values[0] = 1.0f;
+        vectorStore.add(workspace.getId(), new com.lumora.algorithms.common.vector.Vector(
+                chunk.getId(),
+                values,
+                chunk.getId()
+        ));
     }
 
     @Test
