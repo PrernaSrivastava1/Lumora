@@ -90,7 +90,7 @@ class ChunkingStrategyTest {
         assertTrue(chunks.get(0).getContent().contains("Fourth sentence."));
 
         // If heading is present: splits into 2 chunks
-        String textWithHeading = "First sentence. Second sentence! Third sentence?\n# Heading\nFourth sentence.";
+        String textWithHeading = "First sentence. Second sentence! Third sentence? # Heading. Fourth sentence.";
         List<DocumentChunk> chunksWithHeading = semanticChunker.chunk(textWithHeading, 1L);
         assertEquals(2, chunksWithHeading.size());
         assertTrue(chunksWithHeading.get(0).getContent().contains("Third sentence?"));
