@@ -95,7 +95,7 @@ class RagControllerTest {
         chunk = chunkRepository.saveAndFlush(chunk);
 
         vectorStore.clear(workspace.getId());
-        float[] values = new float[768];
+        float[] values = new float[16];
         values[0] = 1.0f;
         vectorStore.add(workspace.getId(), new com.lumora.algorithms.common.vector.Vector(
                 chunk.getId(),
