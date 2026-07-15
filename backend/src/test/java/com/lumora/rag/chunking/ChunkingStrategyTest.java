@@ -84,13 +84,18 @@ class ChunkingStrategyTest {
         String text = "First sentence. Second sentence! Third sentence? Fourth sentence.";
         List<DocumentChunk> chunks = semanticChunker.chunk(text, 1L);
         
-        // Groups 3 sentences together
-        // Chunk 0: "First sentence. Second sentence! Third sentence?"
-        // Chunk 1: " Fourth sentence."
-        assertEquals(2, chunks.size());
+        // Under 300 words and no heading: groups all in 1 chunk
+        assertEquals(1, chunks.size());
         assertTrue(chunks.get(0).getContent().contains("Third sentence?"));
-        assertTrue(!chunks.get(0).getContent().contains("Fourth sentence."));
-        assertTrue(chunks.get(1).getContent().contains("Fourth sentence."));
+        assertTrue(chunks.get(0).getContent().contains("Fourth sentence."));
+
+        // If heading is present: splits into 2 chunks
+        String textWithHeading = "First sentence. Second sentence! Third sentence?\n# Heading\nFourth sentence.";
+        List<DocumentChunk> chunksWithHeading = semanticChunker.chunk(textWithHeading, 1L);
+        assertEquals(2, chunksWithHeading.size());
+        assertTrue(chunksWithHeading.get(0).getContent().contains("Third sentence?"));
+        assertTrue(!chunksWithHeading.get(0).getContent().contains("Fourth sentence."));
+        assertTrue(chunksWithHeading.get(1).getContent().contains("Fourth sentence."));
     }
 
     @Test
