@@ -163,7 +163,7 @@ class SearchAnalyticsAndBenchmarkTest {
         // Populating one vector to prevent dimension mismatch check crashes
         vectorStore.add(new Vector(1L, new float[]{0.1f, 0.2f}, 100L));
 
-        mockMvc.perform(get("/benchmark")
+        mockMvc.perform(get("/analytics/benchmark")
                         .param("q", "0.1, 0.2")
                         .param("metric", "EUCLIDEAN")
                         .param("k", "2"))
