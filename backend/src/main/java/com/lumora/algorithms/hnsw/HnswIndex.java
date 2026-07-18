@@ -61,6 +61,10 @@ public class HnswIndex {
         return enterPoint;
     }
 
+    public Map<Long, HnswNode> getNodes() {
+        return nodes;
+    }
+
     public int getMaxLevel() {
         return maxLevel;
     }
