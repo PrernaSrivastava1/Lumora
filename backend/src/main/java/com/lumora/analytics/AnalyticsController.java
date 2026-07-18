@@ -57,9 +57,9 @@ public class AnalyticsController {
 
     /**
      * Runs an on-demand benchmark comparison or retrieves historical summaries.
-     * GET /benchmark
+     * GET /analytics/benchmark
      */
-    @GetMapping("/benchmark")
+    @GetMapping("/analytics/benchmark")
     public ApiResponse<List<BenchmarkResult>> runBenchmark(
             @RequestParam(value = "q", required = false) String query,
             @RequestParam(value = "metric", defaultValue = "COSINE") DistanceMetric metric,
