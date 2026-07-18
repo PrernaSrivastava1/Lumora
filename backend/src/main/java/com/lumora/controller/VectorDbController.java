@@ -23,7 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class VectorDbController {
 
     private static final List<DemoItem> DEMO_ITEMS = new CopyOnWriteArrayList<>();
