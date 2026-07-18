@@ -21,10 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HnswIndex {
 
     public static class HnswNode {
-        Vector vector;
+        public Vector vector;
         // Level index -> list of neighbor nodes
-        List<List<HnswNode>> connections;
-        int level;
+        public List<List<HnswNode>> connections;
+        public int level;
 
         public HnswNode(Vector vector, int level) {
             this.vector = vector;
