@@ -122,12 +122,13 @@ export default function Documents() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="app-page space-y-7">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Documents</h1>
-          <p className="text-muted-foreground mt-1">
-            Upload text materials to partition them into semantic slices and test retrieval quality.
+          <p className="eyebrow mb-2">Knowledge library</p>
+          <h1 className="text-3xl font-semibold tracking-[-.04em]">Documents</h1>
+          <p className="text-muted-foreground mt-2 max-w-xl">
+            Add, review, and maintain the source material that powers your workspace.
           </p>
         </div>
 
@@ -151,7 +152,7 @@ export default function Documents() {
       </div>
 
       {workspaces && workspaces.length === 0 ? (
-        <div className="border border-dashed border-border rounded-xl p-12 text-center max-w-lg mx-auto space-y-4">
+        <div className="surface border-dashed p-12 text-center max-w-lg mx-auto space-y-4">
           <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground" />
           <div>
             <h3 className="font-bold text-lg">Create a workspace first</h3>
@@ -169,7 +170,7 @@ export default function Documents() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Drag and Drop Panel */}
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4 lg:col-span-1 h-fit">
+          <div className="surface p-6 space-y-4 lg:col-span-1 h-fit">
             <h2 className="text-lg font-bold tracking-tight">Upload Document</h2>
 
             <div
@@ -235,7 +236,7 @@ export default function Documents() {
           </div>
 
           {/* Documents Table */}
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm lg:col-span-2 space-y-4">
+          <div className="surface p-6 lg:col-span-2 space-y-4">
             <h2 className="text-lg font-bold tracking-tight">Workspace Documents</h2>
 
             {isLoading && (

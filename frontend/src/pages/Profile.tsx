@@ -84,10 +84,11 @@ export default function Profile() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl mx-auto">
+    <div className="app-page max-w-5xl space-y-7">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
-          User Settings & Profile
+        <p className="eyebrow mb-2">Account</p>
+        <h1 className="text-3xl font-semibold tracking-[-.04em]">
+          Profile and security
         </h1>
         <p className="text-muted-foreground mt-1">
           Manage your personal details, workspace configurations, and account credentials
@@ -96,9 +97,9 @@ export default function Profile() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Profile Card */}
-        <form onSubmit={handleUpdateProfile} className="rounded-xl border border-border bg-card p-6 shadow-md space-y-4">
+        <form onSubmit={handleUpdateProfile} className="surface p-6 space-y-4">
           <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border pb-3">
-            <User className="h-5 w-5 text-violet-400" />
+            <User className="h-5 w-5 text-primary" />
             Personal Bio Details
           </h2>
 
@@ -153,7 +154,7 @@ export default function Profile() {
             <button
               type="submit"
               disabled={isUpdatingProfile}
-              className="inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50"
+              className="inline-flex justify-center items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-95 active:scale-[.99] transition-all disabled:opacity-50"
             >
               {isUpdatingProfile ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -165,9 +166,9 @@ export default function Profile() {
         </form>
 
         {/* Change Password Card */}
-        <form onSubmit={handleChangePassword} className="rounded-xl border border-border bg-card p-6 shadow-md space-y-4">
+        <form onSubmit={handleChangePassword} className="surface p-6 space-y-4">
           <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border pb-3">
-            <KeyRound className="h-5 w-5 text-fuchsia-400" />
+            <KeyRound className="h-5 w-5 text-primary" />
             Security Configuration
           </h2>
 
@@ -215,7 +216,7 @@ export default function Profile() {
             <button
               type="submit"
               disabled={isChangingPassword || !oldPassword || !newPassword}
-              className="inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-fuchsia-600 to-pink-600 px-4 py-2 text-xs font-semibold text-white shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50"
+              className="inline-flex justify-center items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-95 active:scale-[.99] transition-all disabled:opacity-50"
             >
               {isChangingPassword ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

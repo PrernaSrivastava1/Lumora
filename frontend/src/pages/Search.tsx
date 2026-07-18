@@ -110,7 +110,7 @@ export default function Search() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+    <div className="app-page space-y-7">
       {/* Offline Status Alert Banner */}
       {ollamaOnline === false && (
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex items-center gap-2.5 text-xs text-amber-400 font-semibold animate-in slide-in-from-top-1">
@@ -121,11 +121,12 @@ export default function Search() {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
-            Hybrid Search Engine
+          <p className="eyebrow mb-2">Discovery</p>
+          <h1 className="text-3xl font-semibold tracking-[-.04em]">
+            Search your knowledge base
           </h1>
           <p className="text-muted-foreground mt-1">
-            Query your vector index directly using various mathematical models, keyword rankings, or hybrid combinations.
+            Find grounded answers across your indexed documents with transparent retrieval controls.
           </p>
         </div>
 
@@ -159,7 +160,7 @@ export default function Search() {
       </div>
 
       {/* Query Formulation Card */}
-      <form onSubmit={handleSearch} className="rounded-xl border border-border bg-card p-6 shadow-md space-y-6">
+      <form onSubmit={handleSearch} className="surface p-6 md:p-7 space-y-6">
         {/* Input Bar */}
         <div className="relative flex items-center">
           <SearchIcon className="absolute left-3.5 h-5 w-5 text-muted-foreground" />
@@ -168,12 +169,12 @@ export default function Search() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type search terms (e.g. 'Natural Language Processing', 'Resume') or query vectors"
-            className="w-full pl-11 pr-28 py-3 rounded-lg border border-input bg-muted/10 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-muted-foreground/60"
+            className="w-full pl-11 pr-28 py-3.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-muted-foreground/60"
           />
           <button
             type="submit"
             disabled={isSearching || !query.trim() || selectedWorkspaceId === 0}
-            className="absolute right-2 inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-lg hover:shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none"
+            className="absolute right-2 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-95 active:scale-[.98] transition-all disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none"
           >
             {isSearching ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -278,7 +279,7 @@ export default function Search() {
       )}
 
       {/* Results Section */}
-      <div className="rounded-xl border border-border bg-card p-6 shadow-md space-y-6">
+      <div className="surface p-6 md:p-7 space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
             <Award className="h-5 w-5 text-indigo-400" />

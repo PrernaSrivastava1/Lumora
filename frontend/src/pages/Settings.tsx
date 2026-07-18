@@ -2,9 +2,10 @@ import { Sliders, Database, Trash2, Cpu } from 'lucide-react'
 
 export default function Settings() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="app-page space-y-7">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <p className="eyebrow mb-2">System preferences</p>
+        <h1 className="text-3xl font-semibold tracking-[-.04em]">Settings</h1>
         <p className="text-muted-foreground mt-1">
           Adjust model weights, local Ollama bindings, database thresholds, and indexing variables.
         </p>
@@ -12,7 +13,7 @@ export default function Settings() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Model Configurations */}
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <div className="surface p-6 space-y-4">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
             <Cpu className="h-5 w-5 text-muted-foreground" />
             Ollama Model Configurations
@@ -40,7 +41,7 @@ export default function Settings() {
         </div>
 
         {/* Database Index Configurations */}
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <div className="surface p-6 space-y-4">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
             <Sliders className="h-5 w-5 text-muted-foreground" />
             HNSW Index Hyperparameters
@@ -68,7 +69,7 @@ export default function Settings() {
         </div>
 
         {/* Dangerous Operations */}
-        <div className="rounded-xl border border-red-500/20 bg-card p-6 shadow-sm space-y-4 md:col-span-2">
+        <div className="surface border-red-500/20 p-6 space-y-4 md:col-span-2">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2 text-destructive">
             <Database className="h-5 w-5" />
             System Maintenance

@@ -5,6 +5,7 @@ import {
   FolderOpen,
   FileText,
   Search,
+  Orbit,
   MessageSquare,
   BarChart3,
   Flame,
@@ -15,14 +16,15 @@ import {
 } from 'lucide-react'
 
 const navigation = [
-  { name: 'Dashboard', to: '/', icon: LayoutDashboard },
-  { name: 'Workspaces', to: '/workspaces', icon: FolderOpen },
-  { name: 'Documents', to: '/documents', icon: FileText },
-  { name: 'Semantic Search', to: '/search', icon: Search },
-  { name: 'AI Assistant', to: '/chat', icon: MessageSquare },
-  { name: 'Analytics', to: '/analytics', icon: BarChart3 },
-  { name: 'Benchmark Center', to: '/benchmark', icon: Flame },
-  { name: 'Settings', to: '/settings', icon: Settings },
+  { name: 'Home', description: 'Pick up where you left off', to: '/home', icon: LayoutDashboard },
+  { name: 'Workspaces', description: 'Organize knowledge by project', to: '/workspaces', icon: FolderOpen },
+  { name: 'Documents', description: 'Manage indexed source material', to: '/documents', icon: FileText },
+  { name: 'Search', description: 'Find meaning across documents', to: '/search', icon: Search },
+  { name: 'AI Assistant', description: 'Ask questions with citations', to: '/chat', icon: MessageSquare },
+  { name: 'Knowledge map', description: 'Explore semantic relationships', to: '/knowledge-map', icon: Orbit },
+  { name: 'Analytics', description: 'Understand retrieval insights', to: '/analytics', icon: BarChart3 },
+  { name: 'Benchmarks', description: 'Compare search performance', to: '/benchmark', icon: Flame },
+  { name: 'Settings', description: 'Configure preferences and system', to: '/settings', icon: Settings },
 ]
 
 export default function Sidebar() {
@@ -45,7 +47,7 @@ export default function Sidebar() {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-16 md:z-30 flex flex-col h-[calc(100vh-4rem)] border-r border-border bg-card text-card-foreground transition-all duration-300 ${
+        className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-[4.5rem] md:z-30 flex flex-col h-[calc(100vh-4.5rem)] border-r border-border/80 bg-card/75 backdrop-blur-xl text-card-foreground transition-all duration-300 ${
           mobileSidebarOpen
             ? 'translate-x-0 w-64'
             : '-translate-x-full md:translate-x-0'
@@ -63,28 +65,29 @@ export default function Sidebar() {
         </div>
 
         {/* Links List */}
-        <div className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+        <div className="flex-1 py-5 px-3 space-y-1 overflow-y-auto">
           {navigation.map((item) => (
             <NavLink
               key={item.name}
               to={item.to}
               onClick={closeMobileSidebar}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${
                   isActive
-                    ? 'bg-secondary text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/75'
                 }`
               }
               title={sidebarCollapsed ? item.name : undefined}
             >
               <item.icon className="h-4 w-4 shrink-0" />
               <span
-                className={`transition-opacity duration-200 ${
+                className={`min-w-0 transition-opacity duration-200 ${
                   sidebarCollapsed ? 'md:hidden opacity-0' : 'opacity-100'
                 }`}
               >
-                {item.name}
+                <span className="block leading-4">{item.name}</span>
+                <span className={`mt-0.5 block truncate text-[10px] font-medium leading-3 ${sidebarCollapsed ? '' : 'opacity-70'} ${'group-[.active]:text-primary-foreground'}`}>{item.description}</span>
               </span>
             </NavLink>
           ))}

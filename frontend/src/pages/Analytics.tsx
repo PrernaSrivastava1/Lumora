@@ -135,14 +135,15 @@ export default function Analytics() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+    <div className="app-page space-y-7">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
-            Analytics Engine
+          <p className="eyebrow mb-2">Observability</p>
+          <h1 className="text-3xl font-semibold tracking-[-.04em]">
+            Retrieval performance
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Monitor search latencies, query throughputs, and workspace segmentation statistics in real time.
+          <p className="text-muted-foreground mt-2 max-w-xl">
+            See how your workspace is indexed, retrieved, and used—without losing the bigger picture.
           </p>
         </div>
 

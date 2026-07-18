@@ -427,7 +427,15 @@ export default function AIChat() {
   const dynamicSuggestions = getDynamicSuggestions()
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8.5rem)] rounded-xl border border-border bg-card overflow-hidden">
+    <div className="app-page !pt-5 !pb-5 flex flex-col h-[calc(100vh-7.75rem)]">
+      <div className="surface flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className="flex items-center justify-between gap-4 border-b border-border bg-card px-5 py-4 sm:px-6">
+        <div>
+          <p className="eyebrow mb-1">Grounded conversation</p>
+          <h1 className="text-lg font-semibold tracking-[-.025em]">AI Assistant</h1>
+        </div>
+        <span className="hidden rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground sm:inline-flex">Citations on</span>
+      </div>
       {/* Offline Status Alert Banner */}
       {ollamaOnline === false && (
         <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center gap-2 text-xs text-amber-400 font-semibold animate-in slide-in-from-top-1">
@@ -437,7 +445,7 @@ export default function AIChat() {
       )}
 
       {/* Top Configuration Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 border-b border-border bg-muted/10">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-3.5 border-b border-border bg-muted/10 sm:px-6">
         <div className="flex flex-wrap items-center gap-3">
           {/* Workspace Selector */}
           <div className="flex items-center gap-2">
@@ -819,6 +827,7 @@ export default function AIChat() {
         </form>
       </div>
 
+      </div>
       {/* Inspect Prompt Modal */}
       {inspectingPrompt !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

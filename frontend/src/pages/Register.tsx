@@ -38,10 +38,11 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-2xl border border-border bg-card p-8 shadow-xl">
+      <div className="w-full max-w-md space-y-8 surface p-8 sm:p-9">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
-            Create Account
+          <p className="eyebrow mb-3">Build your knowledge layer</p>
+          <h2 className="text-3xl font-semibold tracking-[-.04em]">
+            Create your account
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Get started with local vector search indexes
@@ -111,7 +112,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-indigo-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50"
+              className="w-full flex justify-center items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-95 active:scale-[.99] transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -124,7 +125,7 @@ export default function Register() {
 
         <div className="text-center text-sm text-muted-foreground pt-4 border-t border-border">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-violet-400 hover:text-violet-300">
+          <Link to="/login" className="font-semibold text-primary hover:underline">
             Sign In
           </Link>
         </div>

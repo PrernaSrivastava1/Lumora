@@ -96,18 +96,19 @@ export default function Workspaces() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="app-page space-y-7">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Workspaces</h1>
+          <p className="eyebrow mb-2">Library</p>
+          <h1 className="text-3xl font-semibold tracking-[-.04em]">Your workspaces</h1>
           <p className="text-muted-foreground mt-1">
-            Isolate and manage semantic indexes and documents across logical boundaries.
+            Organize sources, conversations, and retrieval work around the things your team is exploring.
           </p>
         </div>
         <button
           onClick={handleOpenCreate}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/95 transition-all"
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-95 active:scale-[.99] transition-all"
         >
           <FolderPlus className="h-4 w-4" />
           Create Workspace
@@ -178,7 +179,7 @@ export default function Workspaces() {
           {workspaces.map((ws) => (
             <div
               key={ws.id}
-              className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4 hover:border-foreground/10 transition-all flex flex-col justify-between"
+              className="surface p-5 space-y-4 hover:border-foreground/10 transition-all flex flex-col justify-between"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between">

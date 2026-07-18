@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 import axios from 'axios'
 import {
   Search as SearchIcon,
@@ -128,7 +130,9 @@ interface DocumentInfo {
 }
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<'search' | 'documents' | 'chat'>('search')
+  const { user } = useAuth()
+  const { pathname } = useLocation()
+  const [activeTab, setActiveTab] = useState<'overview' | 'search' | 'documents' | 'chat'>(pathname === '/knowledge-map' ? 'search' : 'overview')
   const [ollamaStatus, setOllamaStatus] = useState({ status: 'OFFLINE', models: [] })
   const [dbStats, setDbStats] = useState({ demoVectorsCount: 0, documentsCount: 0, chunksCount: 0 })
 
@@ -386,16 +390,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto min-h-screen text-slate-100 bg-slate-950 font-sans">
+    <div className="app-page lumora-lab space-y-7 min-h-screen">
       
       {/* Title Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-7 border-b border-border">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Lumora Vector Database
+          <p className="eyebrow mb-2">{activeTab === 'overview' ? `Welcome back, ${user?.username || 'there'}` : 'Workspace overview'}</p>
+          <h1 className="text-3xl font-semibold tracking-[-.04em] text-foreground">
+            Vector intelligence, clearly.
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Production-grade Vector DB built from scratch in Java. Visual PCA clusters & local RAG pipelines.
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+            Explore retrieval quality, document coverage, and the shape of your semantic space.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -418,7 +423,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Database Statistics Counters */}
+      {/* Quiet system health summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl flex items-center gap-4">
           <div className="p-3 rounded-lg bg-indigo-500/10 text-indigo-400">
@@ -452,7 +457,17 @@ export default function Dashboard() {
       </div>
 
       {/* Tabs Switcher Navigation */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex overflow-x-auto border-b border-slate-800">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`flex shrink-0 items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all ${
+            activeTab === 'overview'
+              ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Layers className="h-4 w-4" /> Overview
+        </button>
         <button
           onClick={() => setActiveTab('search')}
           className={`flex items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all ${
@@ -462,7 +477,7 @@ export default function Dashboard() {
           }`}
         >
           <SearchIcon className="h-4 w-4" />
-          Search (Demo Vectors)
+          Knowledge map
         </button>
         <button
           onClick={() => setActiveTab('documents')}
@@ -473,7 +488,7 @@ export default function Dashboard() {
           }`}
         >
           <FileText className="h-4 w-4" />
-          Documents (Real Embeddings)
+          Document library
         </button>
         <button
           onClick={() => setActiveTab('chat')}
@@ -484,12 +499,43 @@ export default function Dashboard() {
           }`}
         >
           <MessageSquare className="h-4 w-4" />
-          Ask AI (RAG Pipeline)
+          Ask Lumora
         </button>
       </div>
 
       {/* Tab Panels Contents */}
       <div className="mt-4">
+        {activeTab === 'overview' && (
+          <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
+            <section className="surface p-6 md:p-8">
+              <p className="eyebrow mb-3">Your next step</p>
+              <h2 className="text-2xl font-semibold tracking-[-.035em] text-foreground">Turn your documents into answers.</h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">Create a focused workspace, add source material, and ask Lumora questions with citations you can verify.</p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link to="/workspaces" className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-95"><PlusCircle className="h-4 w-4" /> Manage workspaces</Link>
+                <Link to="/documents" className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary"><FileText className="h-4 w-4" /> Add documents</Link>
+              </div>
+            </section>
+            <section className="surface p-6">
+              <p className="eyebrow">Workspace health</p>
+              <div className="mt-5 space-y-4">
+                <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Document coverage</span><span className="text-sm font-semibold text-foreground">{dbStats.documentsCount} sources</span></div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-secondary"><div className="h-full w-3/4 rounded-full bg-primary" /></div>
+                <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Index readiness</span><span className="text-sm font-semibold text-foreground">{dbStats.chunksCount} chunks</span></div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-secondary"><div className="h-full w-2/3 rounded-full bg-primary" /></div>
+                <Link to="/analytics" className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">View retrieval insights <Play className="h-3.5 w-3.5" /></Link>
+              </div>
+            </section>
+            <section className="surface p-6 lg:col-span-2">
+              <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow mb-2">Explore</p><h2 className="text-lg font-semibold tracking-[-.02em]">Choose a focused workflow</h2></div><Link to="/search" className="text-sm font-semibold text-primary hover:underline">Open semantic search</Link></div>
+              <div className="mt-5 grid gap-3 md:grid-cols-3">
+                <Link to="/documents" className="rounded-xl border border-border bg-muted/20 p-4 hover:bg-secondary"><FileText className="h-4 w-4 text-primary" /><h3 className="mt-4 text-sm font-semibold">Organize sources</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Upload and review material in one place.</p></Link>
+                <Link to="/chat" className="rounded-xl border border-border bg-muted/20 p-4 hover:bg-secondary"><MessageSquare className="h-4 w-4 text-primary" /><h3 className="mt-4 text-sm font-semibold">Ask with context</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Get grounded responses with source references.</p></Link>
+                <Link to="/benchmark" className="rounded-xl border border-border bg-muted/20 p-4 hover:bg-secondary"><Award className="h-4 w-4 text-primary" /><h3 className="mt-4 text-sm font-semibold">Evaluate retrieval</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Compare search strategies with confidence.</p></Link>
+              </div>
+            </section>
+          </div>
+        )}
         
         {/* TAB 1: Search (Demo Vectors) */}
         {activeTab === 'search' && (

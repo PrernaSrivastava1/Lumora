@@ -85,14 +85,15 @@ export default function Benchmark() {
   const maxLatency = Math.max(...results.map(r => r.averageLatency), 1)
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+    <div className="app-page space-y-7">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
-            Benchmark Center
+          <p className="eyebrow mb-2">Evaluation</p>
+          <h1 className="text-3xl font-semibold tracking-[-.04em]">
+            Benchmark center
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Compare search execution speed and retrieval recall accuracy between indexing models side-by-side.
+          <p className="text-muted-foreground mt-2 max-w-xl">
+            Compare retrieval strategies with a clear view of speed, recall, and practical trade-offs.
           </p>
         </div>
 

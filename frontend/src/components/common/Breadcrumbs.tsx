@@ -14,7 +14,7 @@ export default function Breadcrumbs() {
     <nav className="flex items-center gap-1.5 text-xs text-muted-foreground py-2 px-6 bg-card border-b border-border">
       <Link to="/" className="flex items-center gap-1 hover:text-foreground transition-colors">
         <Home className="h-3 w-3" />
-        <span>Dashboard</span>
+        <span>Home</span>
       </Link>
       {pathnames.map((value, index) => {
         const to = `/${pathnames.slice(0, index + 1).join('/')}`

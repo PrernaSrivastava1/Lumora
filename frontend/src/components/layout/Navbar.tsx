@@ -1,14 +1,14 @@
 import ThemeToggle from '@/components/common/ThemeToggle'
 import { useLayout } from '@/contexts/LayoutContext'
-import { Database, Menu, Bell, Search, User } from 'lucide-react'
+import { Sparkles, Menu, Bell, Search, User } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function Navbar() {
   const { toggleMobileSidebar } = useLayout()
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center justify-between px-6">
+    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/85 backdrop-blur-xl">
+      <div className="flex h-[4.5rem] items-center justify-between px-4 md:px-7">
         <div className="flex items-center gap-3">
           <button
             onClick={toggleMobileSidebar}
@@ -17,24 +17,24 @@ export default function Navbar() {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <Link to="/" className="flex items-center gap-2">
-            <Database className="h-6 w-6 text-primary" />
-            <span className="font-bold text-lg tracking-tight hidden sm:inline">Lumora AI</span>
+          <Link to="/home" className="flex items-center gap-2.5">
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm"><Sparkles className="h-4 w-4" /></span>
+            <span className="font-semibold text-[1.05rem] tracking-[-.03em] hidden sm:inline">Lumora</span>
           </Link>
         </div>
 
         {/* Global Search Placeholder */}
-        <div className="hidden md:flex items-center flex-1 max-w-md mx-8 relative">
+        <div className="hidden md:flex items-center flex-1 max-w-lg mx-10 relative">
           <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search index resources, documents, logs..."
+            placeholder="Search your workspace"
             disabled
-            className="w-full pl-9 pr-4 py-1.5 rounded-lg border border-input bg-muted/40 text-sm placeholder-muted-foreground focus:outline-none cursor-not-allowed"
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-input/80 bg-card/70 text-sm placeholder-muted-foreground focus:outline-none cursor-not-allowed"
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <ThemeToggle />
 
           {/* Notifications Placeholder */}
@@ -48,7 +48,7 @@ export default function Navbar() {
           </button>
 
           {/* User Profile Placeholder */}
-          <div className="h-8 w-8 rounded-full border border-border flex items-center justify-center bg-muted cursor-not-allowed">
+          <div className="h-8 w-8 rounded-full border border-border flex items-center justify-center bg-secondary cursor-not-allowed">
             <User className="h-4 w-4 text-muted-foreground" />
           </div>
         </div>

@@ -15,8 +15,10 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import Profile from '@/pages/Profile'
+import Landing from '@/pages/Landing'
 
 export const router = createBrowserRouter([
+  { path: '/', element: <Landing />, errorElement: <ErrorPage /> },
   {
     path: '/login',
     element: <Login />,
@@ -37,12 +39,16 @@ export const router = createBrowserRouter([
         element: <PageLayout />,
         children: [
           {
-            path: '',
+            path: 'home',
             element: <Dashboard />,
           },
           {
             path: 'workspaces',
             element: <Workspaces />,
+          },
+          {
+            path: 'knowledge-map',
+            element: <Dashboard />,
           },
           {
             path: 'documents',
