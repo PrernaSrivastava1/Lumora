@@ -390,7 +390,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="app-page lumora-lab space-y-7 min-h-screen">
+    <div className="app-page space-y-7 min-h-screen">
       
       {/* Title Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-7 border-b border-border">
@@ -406,7 +406,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <button 
             onClick={fetchStats}
-            className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-100 transition-colors"
+            className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground transition-colors"
             title="Refresh Server Stats"
           >
             <RefreshCw className="h-4 w-4" />
@@ -414,10 +414,10 @@ export default function Dashboard() {
           
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold ${
             ollamaStatus.status === 'ONLINE' 
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-              : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
           }`}>
-            <span className={`h-2 w-2 rounded-full ${ollamaStatus.status === 'ONLINE' ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'}`} />
+            <span className={`h-2 w-2 rounded-full ${ollamaStatus.status === 'ONLINE' ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-rose-555 dark:bg-rose-400 animate-pulse'}`} />
             Ollama: {ollamaStatus.status}
           </div>
         </div>
@@ -425,45 +425,45 @@ export default function Dashboard() {
 
       {/* Quiet system health summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-indigo-500/10 text-indigo-400">
+        <div className="surface p-4 flex items-center gap-4">
+          <div className="p-3 rounded-lg bg-primary/10 text-primary">
             <Database className="h-6 w-6" />
           </div>
           <div>
             <div className="text-2xl font-bold">{dbStats.demoVectorsCount}</div>
-            <div className="text-xs text-slate-400 font-medium">Demo 16D Vectors</div>
+            <div className="text-xs text-muted-foreground font-medium">Demo 16D Vectors</div>
           </div>
         </div>
         
-        <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400">
+        <div className="surface p-4 flex items-center gap-4">
+          <div className="p-3 rounded-lg bg-primary/10 text-primary">
             <FileText className="h-6 w-6" />
           </div>
           <div>
             <div className="text-2xl font-bold">{dbStats.documentsCount}</div>
-            <div className="text-xs text-slate-400 font-medium">RAG Documents</div>
+            <div className="text-xs text-muted-foreground font-medium">RAG Documents</div>
           </div>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-pink-500/10 text-pink-400">
+        <div className="surface p-4 flex items-center gap-4">
+          <div className="p-3 rounded-lg bg-primary/10 text-primary">
             <Layers className="h-6 w-6" />
           </div>
           <div>
             <div className="text-2xl font-bold">{dbStats.chunksCount}</div>
-            <div className="text-xs text-slate-400 font-medium">Document Chunks</div>
+            <div className="text-xs text-muted-foreground font-medium">Document Chunks</div>
           </div>
         </div>
       </div>
 
       {/* Tabs Switcher Navigation */}
-      <div className="flex overflow-x-auto border-b border-slate-800">
+      <div className="flex overflow-x-auto border-b border-border">
         <button
           onClick={() => setActiveTab('overview')}
           className={`flex shrink-0 items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all ${
             activeTab === 'overview'
-              ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-primary text-primary bg-primary/5'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Layers className="h-4 w-4" /> Overview
@@ -472,8 +472,8 @@ export default function Dashboard() {
           onClick={() => setActiveTab('search')}
           className={`flex items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all ${
             activeTab === 'search' 
-              ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5' 
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-primary text-primary bg-primary/5' 
+              : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <SearchIcon className="h-4 w-4" />
@@ -483,8 +483,8 @@ export default function Dashboard() {
           onClick={() => setActiveTab('documents')}
           className={`flex items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all ${
             activeTab === 'documents' 
-              ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5' 
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-primary text-primary bg-primary/5' 
+              : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <FileText className="h-4 w-4" />
@@ -494,8 +494,8 @@ export default function Dashboard() {
           onClick={() => setActiveTab('chat')}
           className={`flex items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all ${
             activeTab === 'chat' 
-              ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5' 
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-primary text-primary bg-primary/5' 
+              : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <MessageSquare className="h-4 w-4" />
@@ -544,15 +544,15 @@ export default function Dashboard() {
             {/* Left Control Panel */}
             <div className="lg:col-span-5 space-y-6">
               
-              <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <Sliders className="h-5 w-5 text-indigo-400" />
+              <div className="surface p-5 space-y-4">
+                <h3 className="text-base font-semibold flex items-center gap-2 text-foreground">
+                  <Sliders className="h-4.5 w-4.5 text-primary" />
                   Search Parameters
                 </h3>
                 
                 <form onSubmit={handleSearch} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Query Concept
                     </label>
                     <input
@@ -560,17 +560,17 @@ export default function Dashboard() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Type a concept, e.g. binary tree, sushi"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+                      className="w-full bg-muted/10 border border-input rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                     />
                     
                     {/* Quick suggestion tags */}
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2 mt-2.5">
                       {['binary tree', 'calculus', 'sushi', 'basketball'].map((tag) => (
                         <button
                           key={tag}
                           type="button"
                           onClick={() => setSearchQuery(tag)}
-                          className="text-[10px] font-semibold bg-slate-800/80 hover:bg-indigo-500/10 hover:text-indigo-400 border border-slate-700/50 hover:border-indigo-500/20 px-2 py-1 rounded-md text-slate-300 transition-colors"
+                          className="text-[10px] font-semibold bg-secondary hover:bg-primary/10 hover:text-primary border border-border px-2 py-1 rounded-md text-muted-foreground transition-colors"
                         >
                           {tag}
                         </button>
@@ -580,13 +580,13 @@ export default function Dashboard() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                         Algorithm
                       </label>
                       <select
                         value={selectedAlgo}
                         onChange={(e: any) => setSelectedAlgo(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full bg-muted/10 border border-input rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                       >
                         <option value="hnsw">HNSW</option>
                         <option value="kdtree">KD-Tree</option>
@@ -595,13 +595,13 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                         Metric
                       </label>
                       <select
                         value={selectedMetric}
                         onChange={(e: any) => setSelectedMetric(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full bg-muted/10 border border-input rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                       >
                         <option value="cosine">Cosine</option>
                         <option value="euclidean">Euclidean</option>
@@ -614,7 +614,7 @@ export default function Dashboard() {
                     <button
                       type="submit"
                       disabled={searching || benchmarking}
-                      className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 transition-colors cursor-pointer"
+                      className="flex-1 bg-primary hover:opacity-95 disabled:opacity-50 text-primary-foreground font-semibold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                     >
                       {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                       Search
@@ -624,7 +624,7 @@ export default function Dashboard() {
                       type="button"
                       onClick={runBenchmark}
                       disabled={searching || benchmarking}
-                      className="bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 border border-slate-700 hover:border-slate-600 text-slate-200 font-semibold py-2 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      className="bg-secondary hover:bg-secondary/80 border border-border text-foreground font-semibold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
                       {benchmarking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                       Compare All Algos
@@ -635,19 +635,19 @@ export default function Dashboard() {
 
               {/* Single Search Results List */}
               {searchResults.length > 0 && (
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
-                  <h3 className="text-lg font-bold flex items-center gap-2">
-                    <Award className="h-5 w-5 text-amber-400" />
+                <div className="surface p-5 space-y-4">
+                  <h3 className="text-base font-semibold flex items-center gap-2 text-foreground">
+                    <Award className="h-4.5 w-4.5 text-amber-500" />
                     Nearest Neighbors Results
                   </h3>
                   
                   <div className="space-y-3">
                     {searchResults.map((hit, idx) => (
-                      <div key={hit.id} className="bg-slate-950 border border-slate-800/80 p-3.5 rounded-xl flex justify-between items-center hover:border-indigo-500/30 transition-colors">
+                      <div key={hit.id} className="bg-muted/10 border border-border p-3.5 rounded-xl flex justify-between items-center hover:border-primary/30 transition-colors">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-slate-500">#{idx + 1}</span>
-                            <span className="font-bold text-slate-100">{hit.concept}</span>
+                            <span className="text-xs font-semibold text-muted-foreground/70">#{idx + 1}</span>
+                            <span className="font-semibold text-foreground">{hit.concept}</span>
                             <span 
                               className="text-[10px] px-2 py-0.5 rounded-full font-bold" 
                               style={{ backgroundColor: `${getCategoryColor(hit.category)}20`, color: getCategoryColor(hit.category) }}
@@ -655,13 +655,13 @@ export default function Dashboard() {
                               {hit.category}
                             </span>
                           </div>
-                          <div className="text-[10px] text-slate-500 font-mono mt-1 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap max-w-[240px]">
+                          <div className="text-[10px] text-muted-foreground/80 font-mono mt-1 overflow-hidden text-ellipsis whitespace-nowrap max-w-[240px]">
                             v = [{hit.values.map(val => val.toFixed(2)).join(', ')}]
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Distance</div>
-                          <div className="text-sm font-mono font-bold text-indigo-400">{hit.distance.toFixed(4)}</div>
+                          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Distance</div>
+                          <div className="text-sm font-mono font-semibold text-primary">{hit.distance.toFixed(4)}</div>
                         </div>
                       </div>
                     ))}
@@ -671,12 +671,12 @@ export default function Dashboard() {
 
               {/* Benchmark Latency Comparison Results */}
               {benchmarkData && (
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
-                  <h3 className="text-lg font-bold flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-indigo-400" />
+                <div className="surface p-5 space-y-4">
+                  <h3 className="text-base font-semibold flex items-center gap-2 text-foreground">
+                    <Clock className="h-4.5 w-4.5 text-primary" />
                     Speed Benchmark Latency
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Runs 1,000 queries sequentially for each algorithm. Notice how HNSW zooms through high-dimensional indexes.
                   </p>
                   
@@ -691,10 +691,10 @@ export default function Dashboard() {
                       return (
                         <div key={algo} className="space-y-1">
                           <div className="flex justify-between text-xs font-semibold">
-                            <span className="text-slate-200">{displayNames[algo]}</span>
-                            <span className="text-indigo-400 font-mono font-bold">{lat.toFixed(4)} ms / query</span>
+                            <span className="text-foreground/90">{displayNames[algo]}</span>
+                            <span className="text-primary font-mono font-bold">{lat.toFixed(4)} ms / query</span>
                           </div>
-                          <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                          <div className="w-full bg-muted/20 h-2 rounded-full overflow-hidden border border-border">
                             <div 
                               className={`h-full rounded-full transition-all duration-500 ${
                                 algo === 'hnsw' ? 'bg-gradient-to-r from-emerald-500 to-teal-400' :
@@ -717,20 +717,20 @@ export default function Dashboard() {
             <div className="lg:col-span-7 space-y-6">
               
               {/* SVG 2D PCA Scatter Plot */}
-              <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl relative">
-                <h3 className="text-lg font-bold flex items-center gap-2 mb-2">
-                  <Cpu className="h-5 w-5 text-indigo-400" />
+              <div className="surface p-5 relative">
+                <h3 className="text-base font-semibold flex items-center gap-2 mb-2 text-foreground">
+                  <Cpu className="h-4.5 w-4.5 text-primary" />
                   PCA Dimensionality Reduction Scatter Plot (16D → 2D)
                 </h3>
-                <p className="text-xs text-slate-400 mb-4">
+                <p className="text-xs text-muted-foreground mb-4">
                   All 16-dimensional vectors are projected into a 2D coordinate plane on the fly using Principal Component Analysis. Watch categories naturally cluster!
                 </p>
 
-                <div className="relative border border-slate-800 rounded-xl bg-slate-950/80 p-2 overflow-hidden flex justify-center">
+                <div className="relative border border-border rounded-xl bg-muted/10 p-2 overflow-hidden flex justify-center text-foreground">
                   <svg width="500" height="350" className="overflow-visible">
                     {/* Grid lines */}
-                    <line x1="40" y1="175" x2="460" y2="175" stroke="#1e293b" strokeWidth="1" strokeDasharray="3,3" />
-                    <line x1="250" y1="40" x2="250" y2="310" stroke="#1e293b" strokeWidth="1" strokeDasharray="3,3" />
+                    <line x1="40" y1="175" x2="460" y2="175" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" strokeOpacity="0.1" />
+                    <line x1="250" y1="40" x2="250" y2="310" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" strokeOpacity="0.1" />
 
                     {/* Plotted Points */}
                     {pcaCoordinates.map((coord) => {
@@ -794,14 +794,14 @@ export default function Dashboard() {
                   {/* Tooltip Overlay */}
                   {hoveredPoint && (
                     <div 
-                      className="absolute bg-slate-900 border border-slate-700 text-slate-100 p-2.5 rounded-lg text-xs font-semibold shadow-xl z-50 pointer-events-none"
+                      className="absolute bg-card border border-border text-foreground p-2.5 rounded-lg text-xs font-semibold shadow-lg z-50 pointer-events-none"
                       style={{ 
                         left: `${hoveredPoint.cx + 15}px`, 
                         top: `${hoveredPoint.cy - 10}px` 
                       }}
                     >
-                      <div className="font-bold text-indigo-300">{hoveredPoint.concept}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">Category: {hoveredPoint.category}</div>
+                      <div className="font-bold" style={{ color: getCategoryColor(hoveredPoint.category) }}>{hoveredPoint.concept}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">Category: {hoveredPoint.category}</div>
                     </div>
                   )}
                 </div>
@@ -811,12 +811,12 @@ export default function Dashboard() {
                   {['CS', 'Math', 'Food', 'Sports'].map(cat => (
                     <div key={cat} className="flex items-center gap-1.5 font-semibold">
                       <span className="h-3 w-3 rounded-full" style={{ backgroundColor: getCategoryColor(cat) }} />
-                      <span className="text-slate-300">{cat}</span>
+                      <span className="text-muted-foreground">{cat}</span>
                     </div>
                   ))}
-                  <div className="flex items-center gap-1.5 font-semibold border-l border-slate-800 pl-4">
-                    <span className="h-3 w-3 rounded-full border border-dashed border-indigo-400" />
-                    <span className="text-slate-400">Search Results</span>
+                  <div className="flex items-center gap-1.5 font-semibold border-l border-border pl-4">
+                    <span className="h-3 w-3 rounded-full border border-dashed border-primary" />
+                    <span className="text-muted-foreground">Search Results</span>
                   </div>
                 </div>
 
@@ -826,30 +826,30 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 {/* Insert custom Demo Vector Form */}
-                <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl">
-                  <h4 className="text-sm font-bold flex items-center gap-1.5 text-indigo-300 mb-3">
-                    <PlusCircle className="h-4.5 w-4.5" />
+                <div className="surface p-4">
+                  <h4 className="text-sm font-semibold flex items-center gap-1.5 text-foreground mb-3">
+                    <PlusCircle className="h-4.5 w-4.5 text-primary" />
                     Insert Demo Vector
                   </h4>
                   
                   <form onSubmit={handleInsertDemo} className="space-y-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Concept Name</label>
+                      <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Concept Name</label>
                       <input
                         type="text"
                         value={newConcept}
                         onChange={(e) => setNewConcept(e.target.value)}
                         placeholder="e.g. deep learning"
-                        className="w-full bg-slate-950 border border-slate-850 rounded-lg px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full bg-muted/10 border border-input rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Category</label>
+                      <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Category</label>
                       <select
                         value={newCategory}
                         onChange={(e) => setNewCategory(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-850 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full bg-muted/10 border border-input rounded-lg px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                       >
                         <option value="CS">CS (Computer Science)</option>
                         <option value="Math">Math (Mathematics)</option>
@@ -861,7 +861,7 @@ export default function Dashboard() {
                     <button
                       type="submit"
                       disabled={insertingDemo}
-                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-1.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      className="w-full bg-primary hover:opacity-95 text-primary-foreground font-semibold py-1.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
                     >
                       {insertingDemo && <Loader2 className="h-3 w-3 animate-spin" />}
                       Add Vector
@@ -870,22 +870,22 @@ export default function Dashboard() {
                 </div>
 
                 {/* List of demo vectors with delete */}
-                <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex flex-col">
-                  <h4 className="text-sm font-bold flex items-center gap-1.5 text-indigo-300 mb-3">
-                    <Database className="h-4.5 w-4.5" />
+                <div className="surface p-4 flex flex-col">
+                  <h4 className="text-sm font-semibold flex items-center gap-1.5 text-foreground mb-3">
+                    <Database className="h-4.5 w-4.5 text-primary" />
                     Manage Items
                   </h4>
                   
                   <div className="flex-1 overflow-y-auto max-h-[160px] space-y-2 pr-1 custom-scrollbar">
                     {demoItems.map(item => (
-                      <div key={item.id} className="flex justify-between items-center bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-900/60 text-xs">
+                      <div key={item.id} className="flex justify-between items-center bg-muted/10 px-2.5 py-1.5 rounded-lg border border-border text-xs">
                         <div className="flex items-center gap-2 overflow-hidden">
                           <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: getCategoryColor(item.category) }} />
-                          <span className="font-bold text-slate-200 overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]">{item.concept}</span>
+                          <span className="font-semibold text-foreground overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]">{item.concept}</span>
                         </div>
                         <button
                           onClick={() => handleDeleteDemo(item.id)}
-                          className="text-slate-500 hover:text-rose-400 p-1 hover:bg-rose-500/5 rounded-md transition-all cursor-pointer"
+                          className="text-muted-foreground hover:text-destructive p-1 hover:bg-destructive/10 rounded-md transition-all cursor-pointer"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>

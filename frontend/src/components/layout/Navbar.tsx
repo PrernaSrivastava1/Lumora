@@ -47,10 +47,14 @@ export default function Navbar() {
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
           </button>
 
-          {/* User Profile Placeholder */}
-          <div className="h-8 w-8 rounded-full border border-border flex items-center justify-center bg-secondary cursor-not-allowed">
-            <User className="h-4 w-4 text-muted-foreground" />
-          </div>
+          {/* User Profile Link */}
+          <Link
+            to="/profile"
+            className="h-8 w-8 rounded-full border border-border flex items-center justify-center bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            title="Profile & Settings"
+          >
+            <User className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </header>
