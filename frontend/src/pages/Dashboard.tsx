@@ -908,18 +908,18 @@ export default function Dashboard() {
             {/* Form Column */}
             <div className="lg:col-span-5 space-y-6">
               
-              <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <PlusCircle className="h-5 w-5 text-indigo-400" />
+              <div className="surface p-5 space-y-4">
+                <h3 className="text-base font-semibold flex items-center gap-2 text-foreground">
+                  <PlusCircle className="h-4.5 w-4.5 text-primary" />
                   Embed & Index Text Document
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Type or paste any textbook content. Lumora will chunk the text, call Ollama to compute 768D embeddings, and populate a separate HNSW index.
                 </p>
                 
                 <form onSubmit={handleEmbedInsert} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Document Title
                     </label>
                     <input
@@ -928,12 +928,12 @@ export default function Dashboard() {
                       value={docTitle}
                       onChange={(e) => setDocTitle(e.target.value)}
                       placeholder="e.g., Operating Systems Notes"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+                      className="w-full bg-muted/10 border border-input rounded-xl px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Document Text Contents
                     </label>
                     <textarea
@@ -942,14 +942,14 @@ export default function Dashboard() {
                       value={docText}
                       onChange={(e) => setDocText(e.target.value)}
                       placeholder="Paste your text study notes, articles, or lecture files here..."
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors font-sans resize-none"
+                      className="w-full bg-muted/10 border border-input rounded-xl p-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all font-sans resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={insertingDoc}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:opacity-50 text-white font-semibold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 transition-colors cursor-pointer"
+                    className="w-full bg-primary hover:opacity-95 disabled:opacity-50 text-primary-foreground font-semibold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                   >
                     {insertingDoc ? (
                       <>
@@ -971,37 +971,37 @@ export default function Dashboard() {
             {/* List Documents Column */}
             <div className="lg:col-span-7">
               
-              <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <Database className="h-5 w-5 text-indigo-400" />
+              <div className="surface p-5 space-y-4">
+                <h3 className="text-base font-semibold flex items-center gap-2 text-foreground">
+                  <Database className="h-4.5 w-4.5 text-primary" />
                   Indexed Documents
                 </h3>
                 
                 {loadingDocs ? (
                   <div className="flex justify-center items-center py-12">
-                    <Loader2 className="h-8 w-8 text-indigo-500 animate-spin" />
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
                   </div>
                 ) : documents.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-slate-500 text-sm">
-                    <AlertCircle className="h-8 w-8 mb-2 text-slate-600" />
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-sm">
+                    <AlertCircle className="h-8 w-8 mb-2 text-muted-foreground/60" />
                     No documents indexed yet. Use the left form to upload contents.
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {documents.map((doc) => (
-                      <div key={doc.id} className="bg-slate-950 border border-slate-800/80 p-4 rounded-xl flex justify-between items-center hover:border-slate-700 transition-colors">
+                      <div key={doc.id} className="bg-muted/10 border border-border p-4 rounded-xl flex justify-between items-center hover:border-primary/20 transition-all">
                         <div className="space-y-1">
-                          <div className="font-bold text-slate-100 flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-indigo-400" />
+                          <div className="font-semibold text-foreground flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-primary" />
                             {doc.title}
                           </div>
-                          <div className="flex items-center gap-4 text-xs text-slate-400 font-medium">
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
                             <span className="flex items-center gap-1">
-                              <Layers className="h-3.5 w-3.5 text-slate-500" />
+                              <Layers className="h-3.5 w-3.5 text-muted-foreground/75" />
                               {doc.chunksCount} overlapping chunks
                             </span>
                             <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5 text-slate-500" />
+                              <Clock className="h-3.5 w-3.5 text-muted-foreground/75" />
                               {new Date(doc.uploadTime).toLocaleDateString()}
                             </span>
                           </div>
@@ -1009,7 +1009,7 @@ export default function Dashboard() {
                         
                         <button
                           onClick={() => handleDeleteDoc(doc.id)}
-                          className="text-slate-500 hover:text-rose-400 p-2 hover:bg-rose-500/5 rounded-lg transition-all cursor-pointer"
+                          className="text-muted-foreground hover:text-destructive p-2 hover:bg-destructive/10 rounded-lg transition-all cursor-pointer"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -1028,12 +1028,12 @@ export default function Dashboard() {
         {activeTab === 'chat' && (
           <div className="space-y-6">
             
-            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4 max-w-3xl mx-auto">
-              <h3 className="text-lg font-bold flex items-center gap-2">
-                <Cpu className="h-5 w-5 text-indigo-400" />
+            <div className="surface p-5 space-y-4 max-w-3xl mx-auto">
+              <h3 className="text-base font-semibold flex items-center gap-2 text-foreground">
+                <Cpu className="h-4.5 w-4.5 text-primary" />
                 Retrieval-Augmented Generation (RAG)
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Ask any question about your indexed documents. HNSW will perform semantic search, fetch the closest 3 chunks, and send them as grounding context to the local LLM.
               </p>
               
@@ -1044,12 +1044,12 @@ export default function Dashboard() {
                   value={chatQuestion}
                   onChange={(e) => setChatQuestion(e.target.value)}
                   placeholder="Type a question, e.g. What is memory management?"
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="flex-1 bg-muted/10 border border-input rounded-xl px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                 />
                 <button
                   type="submit"
                   disabled={chatting || documents.length === 0}
-                  className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:opacity-50 text-white font-semibold py-2 px-5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 transition-colors cursor-pointer"
+                  className="bg-primary hover:opacity-95 disabled:opacity-50 text-primary-foreground font-semibold py-2 px-5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                 >
                   {chatting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
                   🤖 ASK AI
@@ -1057,7 +1057,7 @@ export default function Dashboard() {
               </form>
               
               {documents.length === 0 && (
-                <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg mt-2">
+                <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg mt-2">
                   <AlertCircle className="h-4 w-4" />
                   Warning: No documents inserted yet! Insert documents in Tab 2 before asking questions.
                 </div>
@@ -1066,30 +1066,30 @@ export default function Dashboard() {
 
             {/* Answer & Citations output card */}
             {(chatAnswer || chatting) && (
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-6 max-w-3xl mx-auto">
+              <div className="surface p-6 space-y-6 max-w-3xl mx-auto">
                 
                 {/* Chat Answer Block */}
                 <div className="space-y-2">
-                  <h4 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     🤖 AI Synthesis Answer
                   </h4>
                   {chatting && !streamedAnswer ? (
-                    <div className="flex items-center gap-2 text-slate-400 py-4">
-                      <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+                    <div className="flex items-center gap-2 text-muted-foreground py-4">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
                       Retrieving context & running LLM inference...
                     </div>
                   ) : (
-                    <div className="bg-slate-950/80 border border-slate-850 p-4 rounded-xl text-sm leading-relaxed text-slate-200 font-sans whitespace-pre-wrap">
+                    <div className="bg-muted/5 border border-border p-4 rounded-xl text-sm leading-relaxed text-foreground font-sans whitespace-pre-wrap">
                       {streamedAnswer}
-                      {chatting && <span className="inline-block h-3 w-1.5 bg-indigo-400 ml-1 animate-pulse" />}
+                      {chatting && <span className="inline-block h-3 w-1.5 bg-primary ml-1 animate-pulse" />}
                     </div>
                   )}
                 </div>
 
                 {/* Collapsible sources list */}
                 {chatSources.length > 0 && (
-                  <div className="space-y-3 border-t border-slate-800/80 pt-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <div className="space-y-3 border-t border-border pt-4">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       Grounding Context Chunks (Retrieved from HNSW)
                     </h4>
                     
@@ -1097,23 +1097,23 @@ export default function Dashboard() {
                       {chatSources.map((source, index) => (
                         <div 
                           key={index} 
-                          className="bg-slate-950 border border-slate-850/80 p-3 rounded-xl space-y-2 flex flex-col justify-between"
+                          className="bg-card border border-border p-3 rounded-xl space-y-2 flex flex-col justify-between"
                         >
                           <div className="space-y-1">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">
-                                Chip #{index + 1}
+                              <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                Chunk #{index + 1}
                               </span>
-                              <span className="text-[10px] font-mono text-slate-500">
+                              <span className="text-[10px] font-mono text-muted-foreground">
                                 Sim: {source.similarityScore.toFixed(3)}
                               </span>
                             </div>
-                            <div className="text-[11px] text-slate-400 font-medium line-clamp-3 italic">
+                            <div className="text-[11px] text-muted-foreground font-medium line-clamp-3 italic">
                               "{source.textPreview}"
                             </div>
                           </div>
                           
-                          <div className="text-[10px] text-slate-500 border-t border-slate-900 pt-2 font-bold overflow-hidden text-ellipsis whitespace-nowrap">
+                          <div className="text-[10px] text-muted-foreground border-t border-border pt-2 font-bold overflow-hidden text-ellipsis whitespace-nowrap">
                             Doc: {source.documentTitle}
                           </div>
                         </div>

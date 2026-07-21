@@ -190,7 +190,7 @@ export default function Search() {
           {/* Algorithm Type Selector */}
           <div className="space-y-2">
             <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-              <Sliders className="h-3.5 w-3.5 text-indigo-400" />
+              <Sliders className="h-3.5 w-3.5 text-primary" />
               Search Mode
             </span>
             <div className="flex flex-wrap gap-2">
@@ -208,7 +208,7 @@ export default function Search() {
                   onClick={() => setAlgorithm(algo.val as any)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     algorithm === algo.val
-                      ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300'
+                      ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground'
                   }`}
                 >
@@ -221,7 +221,7 @@ export default function Search() {
           {/* Metric Selector */}
           <div className="space-y-2">
             <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-              <Sliders className="h-3.5 w-3.5 text-fuchsia-400" />
+              <Sliders className="h-3.5 w-3.5 text-primary" />
               Distance Metric
             </span>
             <div className="flex flex-wrap gap-2">
@@ -237,7 +237,7 @@ export default function Search() {
                   disabled={algorithm === 'KEYWORD'}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all disabled:opacity-30 disabled:pointer-events-none ${
                     metric === m.val
-                      ? 'border-fuchsia-500 bg-fuchsia-500/10 text-fuchsia-300'
+                      ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground'
                   }`}
                 >
@@ -250,7 +250,7 @@ export default function Search() {
           {/* Top K Matches Selector */}
           <div className="space-y-2">
             <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-              <Sliders className="h-3.5 w-3.5 text-cyan-400" />
+              <Sliders className="h-3.5 w-3.5 text-primary" />
               Top-K Limit
             </span>
             <div className="flex items-center gap-4">
@@ -260,7 +260,7 @@ export default function Search() {
                 max="20"
                 value={topK}
                 onChange={(e) => setTopK(Number(e.target.value))}
-                className="w-full h-1.5 rounded-lg bg-border appearance-none cursor-pointer accent-indigo-500"
+                className="w-full h-1.5 rounded-lg bg-border appearance-none cursor-pointer accent-primary"
               />
               <span className="text-sm font-bold text-foreground w-6 text-right">{topK}</span>
             </div>
@@ -281,26 +281,26 @@ export default function Search() {
       {/* Results Section */}
       <div className="surface p-6 md:p-7 space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-            <Award className="h-5 w-5 text-indigo-400" />
+          <h2 className="text-base font-semibold tracking-tight flex items-center gap-2">
+            <Award className="h-4.5 w-4.5 text-primary" />
             Query Results
           </h2>
           {searchResponse && (
             <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Layers className="h-3.5 w-3.5 text-indigo-400" />
+                <Layers className="h-3.5 w-3.5 text-primary" />
                 Algorithm: <span className="font-semibold text-foreground">{searchResponse.algorithm}</span>
               </span>
               <span className="flex items-center gap-1">
-                <Sliders className="h-3.5 w-3.5 text-fuchsia-400" />
+                <Sliders className="h-3.5 w-3.5 text-primary" />
                 Dimension: <span className="font-semibold text-foreground">{searchResponse.embeddingDimension}D</span>
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5 text-cyan-400" />
+                <Clock className="h-3.5 w-3.5 text-primary" />
                 Latency: <span className="font-semibold text-foreground">{searchResponse.executionTime} ms</span>
               </span>
               <span className="flex items-center gap-1">
-                <Zap className="h-3.5 w-3.5 text-yellow-500" />
+                <Zap className="h-3.5 w-3.5 text-amber-500" />
                 Matches: <span className="font-semibold text-foreground">{searchResponse.resultCount}</span>
               </span>
             </div>
@@ -321,18 +321,18 @@ export default function Search() {
                 return (
                   <div
                     key={hit.chunkId}
-                    className="rounded-lg border border-border bg-muted/5 p-4 space-y-3 hover:border-violet-500/20 hover:bg-violet-500/5 transition-all group animate-in slide-in-from-top-2 duration-200"
+                    className="rounded-lg border border-border bg-muted/5 p-4 space-y-3 hover:border-primary/20 hover:bg-primary/5 transition-all group animate-in slide-in-from-top-2 duration-200"
                   >
                     <div className="flex flex-wrap justify-between items-center gap-2 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-violet-400 bg-violet-500/10 px-2 py-1 rounded">
+                        <span className="font-semibold text-primary bg-primary/10 px-2 py-1 rounded">
                           Rank #{index + 1}
                         </span>
-                        <span className="font-bold text-foreground flex items-center gap-1">
-                          <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
+                        <span className="font-semibold text-foreground flex items-center gap-1">
+                          <BookOpen className="h-3.5 w-3.5 text-primary" />
                           {docTitle}
                         </span>
-                        <span className="text-muted-foreground font-semibold">
+                        <span className="text-muted-foreground">
                           / {secHeading}
                         </span>
                       </div>
@@ -340,13 +340,13 @@ export default function Search() {
                         <span className="text-muted-foreground">
                           Chunk ID: <span className="text-foreground font-mono">{hit.chunkId}</span>
                         </span>
-                        <span className="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded">
+                        <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">
                           Confidence: {confidencePercent}% (score: {hit.score.toFixed(4)})
                         </span>
                         {hit.documentId && (
                           <Link
                             to={`/documents/${hit.documentId}?highlightChunkId=${hit.chunkId}`}
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-400 hover:text-violet-300 transition-colors"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:opacity-80 transition-colors"
                           >
                             Open <ExternalLink className="h-3 w-3" />
                           </Link>
@@ -354,7 +354,7 @@ export default function Search() {
                       </div>
                     </div>
 
-                    <p className="text-sm text-foreground/90 leading-relaxed font-sans pl-1 border-l-2 border-border group-hover:border-violet-500/40 transition-colors">
+                    <p className="text-sm text-foreground/90 leading-relaxed font-sans pl-2 border-l-2 border-border group-hover:border-primary/45 transition-colors">
                       {(() => {
                         if (!hit.matchedText) {
                           return <span className="text-muted-foreground italic">No text content loaded for this vector chunk</span>;
@@ -366,7 +366,7 @@ export default function Search() {
                         const parts = hit.matchedText.split(pattern);
                         return parts.map((part, i) => 
                           pattern.test(part) ? (
-                            <mark key={i} className="bg-violet-500/30 text-foreground font-semibold px-0.5 rounded">
+                            <mark key={i} className="bg-primary/20 text-foreground font-semibold px-0.5 rounded">
                               {part}
                             </mark>
                           ) : (
