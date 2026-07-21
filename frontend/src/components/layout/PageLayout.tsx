@@ -5,6 +5,7 @@ import Navbar from './Navbar'
 import Sidebar from './Sidebar'
 import Footer from './Footer'
 import Breadcrumbs from '../common/Breadcrumbs'
+import AuthModal from '../common/AuthModal'
 
 export default function PageLayout() {
   const { pathname } = useLocation()
@@ -13,6 +14,7 @@ export default function PageLayout() {
     <LayoutProvider>
       <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-200">
         <Navbar />
+        <AuthModal />
         <div className="flex flex-1 relative">
           <Sidebar />
           <div className="flex-1 flex flex-col min-w-0">

@@ -1,10 +1,12 @@
 import ThemeToggle from '@/components/common/ThemeToggle'
 import { useLayout } from '@/contexts/LayoutContext'
-import { Sparkles, Menu, Bell, Search, User } from 'lucide-react'
+import { Sparkles, Menu, Bell, Search, User, LogIn } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Navbar() {
   const { toggleMobileSidebar } = useLayout()
+  const { isGuest } = useAuth()
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/85 backdrop-blur-xl">
@@ -48,13 +50,23 @@ export default function Navbar() {
           </button>
 
           {/* User Profile Link */}
-          <Link
-            to="/profile"
-            className="h-8 w-8 rounded-full border border-border flex items-center justify-center bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            title="Profile & Settings"
-          >
-            <User className="h-4 w-4" />
-          </Link>
+          {isGuest ? (
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-95 transition-all"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              Sign In
+            </Link>
+          ) : (
+            <Link
+              to="/profile"
+              className="h-8 w-8 rounded-full border border-border flex items-center justify-center bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              title="Profile & Settings"
+            >
+              <User className="h-4 w-4" />
+            </Link>
+          )}
         </div>
       </div>
     </header>

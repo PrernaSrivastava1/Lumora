@@ -13,8 +13,12 @@ interface AuthContextType {
   token: string | null
   isAuthenticated: boolean
   isLoading: boolean
+  isGuest: boolean
+  authModalMessage: string | null
   login: (token: string, refreshToken: string, user: User) => void
   logout: () => Promise<void>
+  requireAuth: (callback: () => void, message: string) => void
+  closeAuthModal: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,14 +31,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     roles: ['ROLE_USER']
   })
   const [token, setToken] = useState<string | null>('mock-token')
+  const [isGuest, setIsGuest] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
+  const [authModalMessage, setAuthModalMessage] = useState<string | null>(null)
 
   useEffect(() => {
     const savedToken = localStorage.getItem('accessToken')
     const savedUser = localStorage.getItem('currentUser')
-    if (savedToken && savedUser) {
+    if (savedToken && savedUser && savedToken !== 'mock-token') {
       setToken(savedToken)
       setUser(JSON.parse(savedUser))
+      setIsGuest(false)
       apiClient.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
     } else {
       // Fallback default token for credentials-free exploration
@@ -45,6 +52,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: 'dev@lumora.ai',
         roles: ['ROLE_USER']
       }))
+      setToken('mock-token')
+      setUser({
+        id: 1,
+        username: 'developer',
+        email: 'dev@lumora.ai',
+        roles: ['ROLE_USER']
+      })
+      setIsGuest(true)
     }
     setIsLoading(false)
   }, [])
@@ -56,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setToken(accessToken)
     setUser(userDetails)
+    setIsGuest(false)
     
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
   }
@@ -66,15 +82,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Logout error on backend:', err)
     } finally {
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      localStorage.removeItem('currentUser')
+      localStorage.setItem('accessToken', 'mock-token')
+      localStorage.setItem('currentUser', JSON.stringify({
+        id: 1,
+        username: 'developer',
+        email: 'dev@lumora.ai',
+        roles: ['ROLE_USER']
+      }))
       
-      setToken(null)
-      setUser(null)
+      setToken('mock-token')
+      setUser({
+        id: 1,
+        username: 'developer',
+        email: 'dev@lumora.ai',
+        roles: ['ROLE_USER']
+      })
+      setIsGuest(true)
       
-      delete apiClient.defaults.headers.common['Authorization']
+      apiClient.defaults.headers.common['Authorization'] = `Bearer mock-token`
     }
+  }
+
+  const requireAuth = (callback: () => void, message: string) => {
+    if (!isGuest) {
+      callback()
+    } else {
+      setAuthModalMessage(message)
+    }
+  }
+
+  const closeAuthModal = () => {
+    setAuthModalMessage(null)
   }
 
   return (
@@ -82,10 +120,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         token: token as string,
-        isAuthenticated: !!token,
+        isAuthenticated: !isGuest && !!token,
         isLoading,
+        isGuest,
+        authModalMessage,
         login,
         logout,
+        requireAuth,
+        closeAuthModal
       }}
     >
       {children}

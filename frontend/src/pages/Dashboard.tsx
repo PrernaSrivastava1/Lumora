@@ -130,7 +130,7 @@ interface DocumentInfo {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, requireAuth } = useAuth()
   const { pathname } = useLocation()
   const [activeTab, setActiveTab] = useState<'overview' | 'search' | 'documents' | 'chat'>(pathname === '/knowledge-map' ? 'search' : 'overview')
   const [ollamaStatus, setOllamaStatus] = useState({ status: 'OFFLINE', models: [] })
@@ -266,98 +266,108 @@ export default function Dashboard() {
   const handleInsertDemo = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newConcept.trim()) return
-    setInsertingDemo(true)
-    try {
-      await axios.post(`${BASE_URL}/insert`, {
-        concept: newConcept.trim(),
-        category: newCategory
-      })
-      setNewConcept('')
-      fetchDemoItems()
-      fetchStats()
-    } catch (err) {
-      console.error('Demo item insertion failed:', err)
-    } finally {
-      setInsertingDemo(false)
-    }
+    requireAuth(async () => {
+      setInsertingDemo(true)
+      try {
+        await axios.post(`${BASE_URL}/insert`, {
+          concept: newConcept.trim(),
+          category: newCategory
+        })
+        setNewConcept('')
+        fetchDemoItems()
+        fetchStats()
+      } catch (err) {
+        console.error('Demo item insertion failed:', err)
+      } finally {
+        setInsertingDemo(false)
+      }
+    }, 'Create a free account to customize demo vectors and cluster categories.')
   }
 
   const handleDeleteDemo = async (id: number) => {
-    try {
-      await axios.delete(`${BASE_URL}/delete/${id}`)
-      fetchDemoItems()
-      fetchStats()
-      // clear search hits matching deleted
-      setSearchResults(prev => prev.filter(r => r.id !== id))
-    } catch (err) {
-      console.error('Demo item deletion failed:', err)
-    }
+    requireAuth(async () => {
+      try {
+        await axios.delete(`${BASE_URL}/delete/${id}`)
+        fetchDemoItems()
+        fetchStats()
+        // clear search hits matching deleted
+        setSearchResults(prev => prev.filter(r => r.id !== id))
+      } catch (err) {
+        console.error('Demo item deletion failed:', err)
+      }
+    }, 'Create a free account to manage and customize the demo vector space.')
   }
 
   const handleEmbedInsert = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!docTitle.trim() || !docText.trim()) return
-    setInsertingDoc(true)
-    try {
-      await axios.post(`${BASE_URL}/doc/insert`, {
-        title: docTitle.trim(),
-        text: docText.trim()
-      })
-      setDocTitle('')
-      setDocText('')
-      fetchDocuments()
-      fetchStats()
-    } catch (err) {
-      console.error('Document embedding creation failed:', err)
-    } finally {
-      setInsertingDoc(false)
-    }
+    requireAuth(async () => {
+      setInsertingDoc(true)
+      try {
+        await axios.post(`${BASE_URL}/doc/insert`, {
+          title: docTitle.trim(),
+          text: docText.trim()
+        })
+        setDocTitle('')
+        setDocText('')
+        fetchDocuments()
+        fetchStats()
+      } catch (err) {
+        console.error('Document embedding creation failed:', err)
+      } finally {
+        setInsertingDoc(false)
+      }
+    }, 'Create a free account to upload and index custom text documents.')
   }
 
   const handleDeleteDoc = async (id: number) => {
-    try {
-      await axios.delete(`${BASE_URL}/doc/delete/${id}`)
-      fetchDocuments()
-      fetchStats()
-    } catch (err) {
-      console.error('Document deletion failed:', err)
-    }
+    requireAuth(async () => {
+      try {
+        await axios.delete(`${BASE_URL}/doc/delete/${id}`)
+        fetchDocuments()
+        fetchStats()
+      } catch (err) {
+        console.error('Document deletion failed:', err)
+      }
+    }, 'Create a free account to manage and clear your workspace document collection.')
   }
 
   const handleAskQuestion = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!chatQuestion.trim()) return
-    setChatting(true)
-    setChatAnswer('')
-    setStreamedAnswer('')
-    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current)
+    requireAuth(async () => {
+      setChatting(true)
+      setChatAnswer('')
+      setStreamedAnswer('')
+      if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current)
 
-    try {
-      const res = await axios.post(`${BASE_URL}/doc/ask`, {
-        question: chatQuestion.trim(),
-        k: 3
-      })
-      setChatAnswer(res.data.answer)
-      setChatSources(res.data.sources || [])
-      
-      // Simulate Typewriter Effect
-      let currentLength = 0
-      const fullText = res.data.answer || ''
-      typewriterIntervalRef.current = setInterval(() => {
-        if (currentLength < fullText.length) {
-          currentLength += 2 // chunk sizes of chars
-          setStreamedAnswer(fullText.substring(0, currentLength))
-        } else {
-          setStreamedAnswer(fullText)
-          if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current)
-        }
-      }, 15)
-    } catch (err) {
-      console.error('Ask AI request failed:', err)
-      setChatAnswer('An error occurred during generating answers. Please verify Ollama is serving.')
-    } finally {
-      setChatting(false)
-    }
+      try {
+        const res = await axios.post(`${BASE_URL}/doc/ask`, {
+          question: chatQuestion.trim(),
+          k: 3
+        })
+        setChatAnswer(res.data.answer)
+        setChatSources(res.data.sources || [])
+        
+        // Simulate Typewriter Effect
+        let currentLength = 0
+        const fullText = res.data.answer || ''
+        typewriterIntervalRef.current = setInterval(() => {
+          if (currentLength < fullText.length) {
+            currentLength += 2 // chunk sizes of chars
+            setStreamedAnswer(fullText.substring(0, currentLength))
+          } else {
+            setStreamedAnswer(fullText)
+            if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current)
+          }
+        }, 15)
+      } catch (err) {
+        console.error('Ask AI request failed:', err)
+        setChatAnswer('An error occurred during generating answers. Please verify Ollama is serving.')
+      } finally {
+        setChatting(false)
+      }
+    }, 'Create a free account to converse with your local AI knowledge assistant.')
   }
 
   // Get color by category
