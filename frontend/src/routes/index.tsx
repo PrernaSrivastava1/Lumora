@@ -13,81 +13,37 @@ import NotFound from '@/pages/NotFound'
 import ErrorPage from '@/components/common/ErrorPage'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
-import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import Profile from '@/pages/Profile'
 import Landing from '@/pages/Landing'
 
 export const router = createBrowserRouter([
+  // Public landing page (no app shell)
   { path: '/', element: <Landing />, errorElement: <ErrorPage /> },
-  {
-    path: '/login',
-    element: <Login />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: '/register',
-    element: <Register />,
-    errorElement: <ErrorPage />,
-  },
+
+  // Auth pages (no app shell)
+  { path: '/login', element: <Login />, errorElement: <ErrorPage /> },
+  { path: '/register', element: <Register />, errorElement: <ErrorPage /> },
+
+  // App shell — all inner routes are publicly accessible.
+  // Protected *actions* (create/upload/chat/etc.) are gated via
+  // requireAuth() inside individual pages, not at the route level.
   {
     path: '/',
-    element: <ProtectedRoute />,
+    element: <PageLayout />,
     errorElement: <ErrorPage />,
     children: [
-      {
-        path: '',
-        element: <PageLayout />,
-        children: [
-          {
-            path: 'home',
-            element: <Dashboard />,
-          },
-          {
-            path: 'workspaces',
-            element: <Workspaces />,
-          },
-          {
-            path: 'knowledge-map',
-            element: <Dashboard />,
-          },
-          {
-            path: 'documents',
-            element: <Documents />,
-          },
-          {
-            path: 'documents/:id',
-            element: <DocumentDetails />,
-          },
-          {
-            path: 'search',
-            element: <Search />,
-          },
-          {
-            path: 'chat',
-            element: <AIChat />,
-          },
-          {
-            path: 'analytics',
-            element: <Analytics />,
-          },
-          {
-            path: 'benchmark',
-            element: <Benchmark />,
-          },
-          {
-            path: 'settings',
-            element: <Settings />,
-          },
-          {
-            path: 'profile',
-            element: <Profile />,
-          },
-          {
-            path: '*',
-            element: <NotFound />,
-          },
-        ],
-      },
+      { path: 'home', element: <Dashboard /> },
+      { path: 'workspaces', element: <Workspaces /> },
+      { path: 'knowledge-map', element: <Dashboard /> },
+      { path: 'documents', element: <Documents /> },
+      { path: 'documents/:id', element: <DocumentDetails /> },
+      { path: 'search', element: <Search /> },
+      { path: 'chat', element: <AIChat /> },
+      { path: 'analytics', element: <Analytics /> },
+      { path: 'benchmark', element: <Benchmark /> },
+      { path: 'settings', element: <Settings /> },
+      { path: 'profile', element: <Profile /> },
+      { path: '*', element: <NotFound /> },
     ],
   },
 ])

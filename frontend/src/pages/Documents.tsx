@@ -15,11 +15,15 @@ import {
   Layers,
   X,
   RefreshCw,
+  Info,
+  LogIn,
 } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Documents() {
   const { data: workspaces, isLoading: isWorkspacesLoading } = useWorkspaces()
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number>(0)
+  const { isGuest, requireAuth } = useAuth()
 
   // Auto-select first workspace when loaded
   if (workspaces && workspaces.length > 0 && selectedWorkspaceId === 0) {
@@ -100,6 +104,21 @@ export default function Documents() {
     }
   }
 
+  const handleUploadSubmitGated = () =>
+    requireAuth(handleUploadSubmit, 'Sign in to upload and index documents. Your files are stored securely in your private workspace.')
+
+  const handleTriggerFileInput = () =>
+    requireAuth(() => fileInputRef.current?.click(), 'Sign in to upload documents to your workspace library.')
+
+  const handleDeleteDocGated = (doc: Document) =>
+    requireAuth(() => setDeleteDoc(doc), 'Sign in to delete documents from your workspace.')
+
+  const handleRetryGated = (doc: Document) =>
+    requireAuth(
+      () => retryMutation.mutate({ id: doc.id, workspaceId: selectedWorkspaceId }),
+      'Sign in to retry document indexing.'
+    )
+
   const handleDeleteConfirm = async () => {
     if (!deleteDoc) return
     try {
@@ -123,6 +142,24 @@ export default function Documents() {
 
   return (
     <div className="app-page space-y-7">
+      {/* Guest Banner */}
+      {isGuest && (
+        <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3.5">
+          <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">You're browsing in guest mode</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Sign in to upload documents, manage files, and build your private knowledge base.</p>
+          </div>
+          <Link
+            to="/login"
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-all"
+          >
+            <LogIn className="h-3 w-3" />
+            Sign in
+          </Link>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <p className="eyebrow mb-2">Knowledge library</p>
@@ -177,8 +214,8 @@ export default function Documents() {
               onDragEnter={handleDrag}
               onDragOver={handleDrag}
               onDragLeave={handleDrag}
-              onDrop={handleDrop}
-              onClick={triggerFileInput}
+              onDrop={isGuest ? (e) => { e.preventDefault(); requireAuth(() => {}, 'Sign in to upload and index documents.') } : handleDrop}
+              onClick={handleTriggerFileInput}
               className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
                 dragActive
                   ? 'border-primary bg-primary/5'
@@ -193,8 +230,12 @@ export default function Documents() {
                 className="hidden"
               />
               <FileUp className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-              <span className="text-sm font-semibold block">Drag & drop your file here</span>
-              <span className="text-xs text-muted-foreground block mt-1">or click to browse local files</span>
+              <span className="text-sm font-semibold block">
+                {isGuest ? 'Sign in to upload documents' : 'Drag & drop your file here'}
+              </span>
+              <span className="text-xs text-muted-foreground block mt-1">
+                {isGuest ? 'Create a free account to index your files' : 'or click to browse local files'}
+              </span>
               <span className="text-[10px] text-muted-foreground/60 block mt-2">
                 Supported types: PDF, DOCX, TXT, MD (Max 10MB)
               </span>
@@ -226,7 +267,7 @@ export default function Documents() {
             )}
 
             <button
-              onClick={handleUploadSubmit}
+              onClick={handleUploadSubmitGated}
               disabled={!selectedFile || uploadMutation.isPending}
               className="w-full inline-flex justify-center items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/95 transition-all disabled:opacity-50"
             >
@@ -373,7 +414,7 @@ export default function Documents() {
                           <div className="flex justify-end gap-1.5">
                             {doc.processingStatus === 'FAILED' && (
                               <button
-                                onClick={() => retryMutation.mutate({ id: doc.id, workspaceId: selectedWorkspaceId })}
+                                onClick={() => handleRetryGated(doc)}
                                 disabled={retryMutation.isPending}
                                 className="rounded p-1 text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 transition-all disabled:opacity-50"
                                 title="Retry processing"
@@ -389,7 +430,7 @@ export default function Documents() {
                               <Eye className="h-4 w-4" />
                             </Link>
                             <button
-                              onClick={() => setDeleteDoc(doc)}
+                              onClick={() => handleDeleteDocGated(doc)}
                               className="rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                               title="Delete Document"
                             >

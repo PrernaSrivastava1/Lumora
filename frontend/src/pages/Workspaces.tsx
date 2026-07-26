@@ -18,10 +18,15 @@ import {
   X,
   Plus,
   Loader2,
+  Info,
+  LogIn,
 } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { Link } from 'react-router-dom'
 
 export default function Workspaces() {
   const { data: workspaces, isLoading, isError, error } = useWorkspaces()
+  const { isGuest, requireAuth } = useAuth()
 
   // Mutations
   const createMutation = useCreateWorkspace()
@@ -38,19 +43,26 @@ export default function Workspaces() {
   const [description, setDescription] = useState('')
   const [formError, setFormError] = useState('')
 
-  const handleOpenCreate = () => {
+  const openCreate = () => {
     setName('')
     setDescription('')
     setFormError('')
     setIsCreateOpen(true)
   }
 
-  const handleOpenEdit = (ws: Workspace) => {
-    setName(ws.name)
-    setDescription(ws.description)
-    setFormError('')
-    setEditWorkspace(ws)
-  }
+  const handleOpenCreate = () =>
+    requireAuth(openCreate, 'Sign in to create and manage workspaces. Your workspaces and documents will be saved to your account.')
+
+  const handleOpenEdit = (ws: Workspace) =>
+    requireAuth(() => {
+      setName(ws.name)
+      setDescription(ws.description)
+      setFormError('')
+      setEditWorkspace(ws)
+    }, 'Sign in to edit this workspace. Your changes will be saved securely to your account.')
+
+  const handleOpenDelete = (ws: Workspace) =>
+    requireAuth(() => setDeleteWorkspace(ws), 'Sign in to delete workspaces from your account.')
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -97,6 +109,24 @@ export default function Workspaces() {
 
   return (
     <div className="app-page space-y-7">
+      {/* Guest Banner */}
+      {isGuest && (
+        <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3.5">
+          <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">You're exploring as a guest</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Sign in to create, edit, and delete workspaces. Browsing is always free.</p>
+          </div>
+          <Link
+            to="/login"
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-all"
+          >
+            <LogIn className="h-3 w-3" />
+            Sign in
+          </Link>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -168,7 +198,7 @@ export default function Workspaces() {
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/95 transition-all"
           >
             <Plus className="h-4 w-4" />
-            Add First Workspace
+            {isGuest ? 'Sign in to create workspace' : 'Add First Workspace'}
           </button>
         </div>
       )}
@@ -195,7 +225,7 @@ export default function Workspaces() {
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      onClick={() => setDeleteWorkspace(ws)}
+                      onClick={() => handleOpenDelete(ws)}
                       className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                       title="Delete Workspace"
                     >

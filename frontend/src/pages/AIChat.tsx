@@ -20,10 +20,12 @@ import {
   FileText,
   Brain,
   History,
-  ArrowUpRight
+  ArrowUpRight,
+  LogIn,
 } from 'lucide-react'
 import apiClient from '@/services/api'
 import { useDocuments } from '@/hooks/useDocuments'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface SourceReference {
   documentTitle: string
@@ -60,6 +62,7 @@ export default function AIChat() {
   const [algorithm, setAlgorithm] = useState<string>('AUTO')
   const [topK, setTopK] = useState<number>(5)
   const [ollamaOnline, setOllamaOnline] = useState<boolean | null>(null)
+  const { isGuest, requireAuth } = useAuth()
 
   // AI Memory Config
   const [enableMemory, setEnableMemory] = useState<boolean>(true)
@@ -261,6 +264,14 @@ export default function AIChat() {
       }
       setIsSubmitting(false)
     }
+  }
+
+  const handleSendGated = (e: React.FormEvent | null, customPrompt?: string) => {
+    if (e) e.preventDefault()
+    requireAuth(
+      () => handleSend(null, customPrompt || inputMsg),
+      'Sign in to start an AI conversation. Your chats are grounded in your personal document library.'
+    )
   }
 
   const handleStop = () => {
