@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { KeyRound, Mail, User, Loader2, AlertCircle } from 'lucide-react'
+import { KeyRound, Mail, User, Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import apiClient from '@/services/api'
 
 export default function Register() {
@@ -127,6 +127,16 @@ export default function Register() {
           Already have an account?{' '}
           <Link to="/login" className="font-semibold text-primary hover:underline">
             Sign In
+          </Link>
+        </div>
+
+        <div className="text-center pt-2">
+          <Link
+            to="/home"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Continue exploring without signing in
           </Link>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, BrainCircuit, Check, ChevronRight, Layers3, Search, Sparkles } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 const capabilities = [
   { icon: Layers3, title: 'A home for your knowledge', text: 'Organize source material into focused, private workspaces.' },
@@ -10,11 +11,19 @@ const capabilities = [
 
 export default function Landing() {
   const navigate = useNavigate()
+  const { isGuest } = useAuth()
   const [showWelcome, setShowWelcome] = useState(() => localStorage.getItem('lumora-welcome-seen') !== 'true')
   const [lineIndex, setLineIndex] = useState(0)
   const [characterCount, setCharacterCount] = useState(0)
   const lines = ['Welcome to Lumora.', 'Your knowledge, intelligently connected.', 'Search with meaning. Ask with context.', 'Turn information into understanding.']
   const currentLine = lines[lineIndex]
+
+  // Auto-redirect authenticated users past the splash
+  useEffect(() => {
+    if (!isGuest) {
+      navigate('/home', { replace: true })
+    }
+  }, [isGuest, navigate])
 
   useEffect(() => {
     if (!showWelcome || lineIndex >= lines.length) return

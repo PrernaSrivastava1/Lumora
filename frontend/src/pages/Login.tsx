@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { KeyRound, Mail, Loader2, AlertCircle } from 'lucide-react'
+import { KeyRound, Mail, Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import apiClient from '@/services/api'
 
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = (location.state as any)?.from || '/home'
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -23,7 +25,7 @@ export default function Login() {
       if (res.data.success) {
         const { token, refreshToken, id, email, roles } = res.data.data
         login(token, refreshToken, { id, username, email, roles })
-        navigate('/home')
+        navigate(from, { replace: true })
       } else {
         setErrorMsg(res.data.message || 'Login failed')
       }
@@ -104,6 +106,16 @@ export default function Login() {
           Don't have an account?{' '}
           <Link to="/register" className="font-semibold text-primary hover:underline">
             Create Account
+          </Link>
+        </div>
+
+        <div className="text-center pt-2">
+          <Link
+            to="/home"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Continue exploring without signing in
           </Link>
         </div>
       </div>
