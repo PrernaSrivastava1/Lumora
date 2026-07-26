@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { User, KeyRound, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { User, KeyRound, Loader2, AlertCircle, CheckCircle, Sparkles, LogIn, UserPlus } from 'lucide-react'
 import apiClient from '@/services/api'
+import { Link } from 'react-router-dom'
 
 export default function Profile() {
   const { user } = useAuth()
@@ -87,17 +88,57 @@ export default function Profile() {
     <div className="app-page max-w-5xl space-y-7">
       <div>
         <p className="eyebrow mb-2">Account</p>
-        <h1 className="text-3xl font-semibold tracking-[-.04em]">
-          Profile and security
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-[-.04em]">Profile and security</h1>
         <p className="text-muted-foreground mt-1">
           Manage your personal details, workspace configurations, and account credentials
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Profile Card */}
-        <form onSubmit={handleUpdateProfile} className="surface p-6 space-y-4">
+      {/* Guest Prompt — shown instead of forms */}
+      {isGuest ? (
+        <div className="flex flex-col items-center justify-center py-16 px-6 text-center space-y-6">
+          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+            <Sparkles className="h-6 w-6" />
+          </span>
+          <div className="space-y-2 max-w-sm">
+            <h2 className="text-xl font-semibold tracking-tight">Create a free account</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Sign in to manage your profile, configure security settings, and personalise your Lumora experience.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-95 transition-all"
+            >
+              <LogIn className="h-4 w-4" />
+              Sign In
+            </Link>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-semibold hover:bg-secondary transition-all"
+            >
+              <UserPlus className="h-4 w-4 text-muted-foreground" />
+              Create Free Account
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-md w-full pt-4">
+            {[
+              'Personal bio and avatar',
+              'Password management',
+              'Account preferences',
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground p-3 rounded-lg border border-border bg-card">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Profile Card */}
+          <form onSubmit={handleUpdateProfile} className="surface p-6 space-y-4">
           <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border pb-3">
             <User className="h-5 w-5 text-primary" />
             Personal Bio Details
@@ -226,7 +267,8 @@ export default function Profile() {
             </button>
           </div>
         </form>
-      </div>
+        </div>
+      )}
     </div>
   )
 }

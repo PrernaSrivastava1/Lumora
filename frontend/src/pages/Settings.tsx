@@ -1,6 +1,8 @@
-import { Sliders, Database, Trash2, Cpu } from 'lucide-react'
+import { Sliders, Database, Trash2, Cpu, Info } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Settings() {
+  const { isGuest, requireAuth } = useAuth()
   return (
     <div className="app-page space-y-7">
       <div>
@@ -10,6 +12,15 @@ export default function Settings() {
           Adjust model weights, local Ollama bindings, database thresholds, and indexing variables.
         </p>
       </div>
+
+      {isGuest && (
+        <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3.5">
+          <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground">
+            You're viewing system defaults. <span className="font-medium text-foreground">Sign in</span> to access configuration management and maintenance operations.
+          </p>
+        </div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Model Configurations */}
@@ -82,8 +93,14 @@ export default function Settings() {
               </span>
             </div>
             <button
-              disabled
-              className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground shadow hover:bg-destructive/95 transition-all cursor-not-allowed shrink-0"
+              onClick={() =>
+                requireAuth(
+                  () => alert('Purge confirmed — implement backend call'),
+                  'Sign in to access database maintenance. This operation permanently removes all indexed data.'
+                )
+              }
+              disabled={isGuest}
+              className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground shadow hover:bg-destructive/95 transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 className="h-4 w-4" />
               Purge Database

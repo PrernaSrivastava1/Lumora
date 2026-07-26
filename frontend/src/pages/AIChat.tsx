@@ -802,7 +802,7 @@ export default function AIChat() {
               <button
                 key={sIdx}
                 type="button"
-                onClick={() => handleSend(null, suggestion)}
+                onClick={() => handleSendGated(null, suggestion)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground hover:text-foreground hover:bg-muted/30 hover:border-violet-500/30 transition-all font-medium cursor-pointer"
               >
                 <Sparkles className="h-3 w-3 text-violet-400 shrink-0" />
@@ -813,14 +813,16 @@ export default function AIChat() {
         )}
 
         {/* Input Form Bar */}
-        <form onSubmit={(e) => handleSend(e)} className="p-4 border-t border-border bg-card">
+        <form onSubmit={(e) => handleSendGated(e)} className="p-4 border-t border-border bg-card">
           <div className="max-w-3xl mx-auto flex gap-2 relative items-center">
             <input
               type="text"
               value={inputMsg}
               onChange={(e) => setInputMsg(e.target.value)}
               placeholder={
-                selectedWorkspaceId
+                isGuest
+                  ? 'Sign in to start chatting with your AI assistant...'
+                  : selectedWorkspaceId
                   ? 'Ask a question about your indexed files...'
                   : 'Please create a workspace and upload documents to begin...'
               }
@@ -836,6 +838,22 @@ export default function AIChat() {
             </button>
           </div>
         </form>
+
+        {/* Guest info strip */}
+        {isGuest && (
+          <div className="flex items-center justify-between gap-3 px-5 py-2.5 bg-primary/5 border-t border-primary/10">
+            <p className="text-xs text-muted-foreground">
+              <Info className="inline h-3 w-3 mr-1 text-primary" />
+              Sign in to send messages and save your AI conversations.
+            </p>
+            <Link
+              to="/login"
+              className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+            >
+              <LogIn className="h-3 w-3" /> Sign in
+            </Link>
+          </div>
+        )}
       </div>
 
       </div>
